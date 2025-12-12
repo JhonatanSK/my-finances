@@ -7,16 +7,19 @@ import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
-import { useSnapshot } from '@/hooks/useSnapshots';
+import { useSnapshot, useSnapshots } from '@/hooks/useSnapshots';
 import { formatDate, formatMonthYear } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,6 +36,7 @@ export default function SnapshotsCompareScreen() {
     snapshotIdB?: string;
   }>();
   const { getReport, getProjections } = useReports();
+  const { snapshots, loadSnapshots } = useSnapshots(id || null);
   const { snapshot: snapshotA, isLoading: isLoadingA } = useSnapshot(
     snapshotIdA || null
   );
@@ -42,8 +46,17 @@ export default function SnapshotsCompareScreen() {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
+  const [selectedA, setSelectedA] = useState<string | null>(snapshotIdA || null);
+  const [selectedB, setSelectedB] = useState<string | null>(snapshotIdB || null);
+
   const report = id ? getReport(id) : null;
   const currentProjections = id ? getProjections(id) : [];
+
+  useEffect(() => {
+    if (id && !snapshotIdA && !snapshotIdB) {
+      loadSnapshots();
+    }
+  }, [id, snapshotIdA, snapshotIdB, loadSnapshots]);
 
   // Determine projections for A and B
   const projectionsA = snapshotA?.projections || [];
@@ -80,6 +93,150 @@ export default function SnapshotsCompareScreen() {
             Carregando comparação...
           </Text>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  // If no snapshots selected, show selection screen
+  if (!snapshotIdA && !snapshotIdB) {
+    const handleSelectA = (snapshotId: string) => {
+      setSelectedA(snapshotId);
+    };
+
+    const handleSelectB = (snapshotId: string | 'current') => {
+      setSelectedB(snapshotId);
+    };
+
+    const handleCompare = () => {
+      if (!selectedA && !selectedB) {
+        Alert.alert('Aviso', 'Selecione pelo menos uma visão para comparar');
+        return;
+      }
+      const params: any = { id };
+      if (selectedA) params.snapshotIdA = selectedA;
+      if (selectedB) params.snapshotIdB = selectedB;
+      router.push({
+        pathname: '/report/[id]/snapshots/compare',
+        params,
+      });
+    };
+
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+        <CustomHeader
+          title="Selecionar Visões"
+          subtitle={report?.name}
+        />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={[styles.selectionTitle, { color: colors.text }]}>
+            Selecione as visões para comparar
+          </Text>
+
+          {/* Visão A */}
+          <View style={styles.selectionSection}>
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+              Visão A
+            </Text>
+            <View style={[styles.selectionCard, { backgroundColor: colors.surface }]}>
+              {snapshots.map((snapshot) => (
+                <TouchableOpacity
+                  key={snapshot.id}
+                  style={[
+                    styles.selectionItem,
+                    selectedA === snapshot.id && {
+                      backgroundColor: colors.surfaceSecondary,
+                      borderColor: colors.tint,
+                      borderWidth: 2,
+                    },
+                  ]}
+                  onPress={() => handleSelectA(snapshot.id)}
+                >
+                  <View style={styles.selectionItemContent}>
+                    <Text style={[styles.selectionItemText, { color: colors.text }]}>
+                      {formatDate(snapshot.createdAt)}
+                    </Text>
+                    <Text style={[styles.selectionItemSubtext, { color: colors.textSecondary }]}>
+                      {formatCurrency(snapshot.finalAmountAtEnd)}
+                    </Text>
+                  </View>
+                  {selectedA === snapshot.id && (
+                    <Ionicons name="checkmark-circle" size={24} color={colors.tint} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Visão B */}
+          <View style={styles.selectionSection}>
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+              Visão B
+            </Text>
+            <View style={[styles.selectionCard, { backgroundColor: colors.surface }]}>
+              <TouchableOpacity
+                style={[
+                  styles.selectionItem,
+                  selectedB === 'current' && {
+                    backgroundColor: colors.surfaceSecondary,
+                    borderColor: colors.highlight,
+                    borderWidth: 2,
+                  },
+                ]}
+                onPress={() => handleSelectB('current')}
+              >
+                <View style={styles.selectionItemContent}>
+                  <Text style={[styles.selectionItemText, { color: colors.text }]}>
+                    Visão Atual
+                  </Text>
+                  <Text style={[styles.selectionItemSubtext, { color: colors.textSecondary }]}>
+                    Projeção atual do relatório
+                  </Text>
+                </View>
+                {selectedB === 'current' && (
+                  <Ionicons name="checkmark-circle" size={24} color={colors.highlight} />
+                )}
+              </TouchableOpacity>
+              {snapshots.map((snapshot) => (
+                <TouchableOpacity
+                  key={snapshot.id}
+                  style={[
+                    styles.selectionItem,
+                    selectedB === snapshot.id && {
+                      backgroundColor: colors.surfaceSecondary,
+                      borderColor: colors.highlight,
+                      borderWidth: 2,
+                    },
+                  ]}
+                  onPress={() => handleSelectB(snapshot.id)}
+                >
+                  <View style={styles.selectionItemContent}>
+                    <Text style={[styles.selectionItemText, { color: colors.text }]}>
+                      {formatDate(snapshot.createdAt)}
+                    </Text>
+                    <Text style={[styles.selectionItemSubtext, { color: colors.textSecondary }]}>
+                      {formatCurrency(snapshot.finalAmountAtEnd)}
+                    </Text>
+                  </View>
+                  {selectedB === snapshot.id && (
+                    <Ionicons name="checkmark-circle" size={24} color={colors.highlight} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.compareButtonContainer}>
+            <PrimaryButton
+              title="Comparar"
+              onPress={handleCompare}
+              disabled={!selectedA && !selectedB}
+            />
+          </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -371,6 +528,47 @@ const styles = StyleSheet.create({
   },
   milestoneValueB: {
     ...Typography.number,
+  },
+  selectionTitle: {
+    ...Typography.h4,
+    marginBottom: Spacing.lg,
+    textAlign: 'center',
+  },
+  selectionSection: {
+    marginBottom: Spacing.lg,
+  },
+  sectionLabel: {
+    ...Typography.label,
+    marginBottom: Spacing.sm,
+  },
+  selectionCard: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  selectionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.xs,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  selectionItemContent: {
+    flex: 1,
+  },
+  selectionItemText: {
+    ...Typography.body,
+    marginBottom: 2,
+  },
+  selectionItemSubtext: {
+    ...Typography.bodySmall,
+  },
+  compareButtonContainer: {
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xl,
   },
 });
 
