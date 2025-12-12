@@ -48,7 +48,13 @@ export function StatCard({
         { backgroundColor: colors.surface },
       ]}
     >
-      <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
+      <Text 
+        style={[styles.label, { color: colors.textSecondary }]}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {label}
+      </Text>
       <Text
         style={[
           compact ? styles.valueCompact : styles.value,
@@ -56,6 +62,7 @@ export function StatCard({
         ]}
         numberOfLines={1}
         adjustsFontSizeToFit
+        minimumFontScale={0.7}
       >
         {value}
       </Text>
@@ -70,13 +77,15 @@ export function StatCard({
 
 const styles = StyleSheet.create({
   container: {
-    padding: Spacing.md,
+    flex: 1,
+    padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
-    minWidth: 120,
+    minWidth: 0, // Important for flex to work properly
   },
   containerCompact: {
-    padding: Spacing.sm,
-    minWidth: 100,
+    flex: 1,
+    padding: Spacing.md,
+    minWidth: 0, // Important for flex to work properly
   },
   label: {
     ...Typography.labelSmall,

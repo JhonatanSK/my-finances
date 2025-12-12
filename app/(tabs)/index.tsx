@@ -1,23 +1,22 @@
-import React, { useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { ReportCard } from '@/components/reports/ReportCard';
-import { FAB } from '@/components/ui/FAB';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { FAB } from '@/components/ui/FAB';
 import { LoadingState } from '@/components/ui/LoadingState';
-import { useReports } from '@/hooks/useReports';
-import { Colors } from '@/constants/theme';
 import { Spacing } from '@/constants/spacing';
+import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useReports } from '@/hooks/useReports';
+import { useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import {
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ReportsListScreen() {
   const router = useRouter();
@@ -49,7 +48,7 @@ export default function ReportsListScreen() {
 
   if (isLoading && reports.length === 0) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <LoadingState message="Carregando relatórios..." />
       </SafeAreaView>
     );
@@ -98,7 +97,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: Spacing.lg,
-    paddingBottom: 100, // Space for FAB
+    paddingBottom: 120, // Space for FAB + bottom navigation
   },
   listContentEmpty: {
     flexGrow: 1,

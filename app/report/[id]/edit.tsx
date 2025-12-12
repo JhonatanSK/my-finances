@@ -1,7 +1,10 @@
+import { CustomHeader } from '@/components/ui/CustomHeader';
 import { NumberField } from '@/components/ui/NumberField';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
+import { Separator } from '@/components/ui/Separator';
 import { TextField } from '@/components/ui/TextField';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
@@ -15,16 +18,20 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+export const options = {
+  headerShown: false,
+};
 
 export default function ReportEditScreen() {
   const router = useRouter();
@@ -182,7 +189,7 @@ export default function ReportEditScreen() {
 
   if (isLoading || !report) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.tint} />
         </View>
@@ -191,14 +198,8 @@ export default function ReportEditScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Editar Relatório</Text>
-        <View style={styles.placeholder} />
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <CustomHeader title="Editar Relatório" subtitle={report.name} />
 
       <ScrollView
         style={styles.scrollView}
@@ -248,6 +249,8 @@ export default function ReportEditScreen() {
           decimals={2}
         />
 
+        <Separator />
+
         <SectionHeader
           title="Entradas Mensais"
           icon="arrow-down-circle-outline"
@@ -293,6 +296,8 @@ export default function ReportEditScreen() {
           </TouchableOpacity>
         )}
 
+        <Separator />
+
         <SectionHeader
           title="Saídas Mensais"
           icon="arrow-up-circle-outline"
@@ -336,28 +341,38 @@ export default function ReportEditScreen() {
           </TouchableOpacity>
         )}
 
+        <Separator />
+
         <SectionHeader title="Investimento e Meta" icon="trending-up-outline" />
-        <NumberField
-          label="Taxa anual de investimento (%)"
-          value={annualRate}
-          onChangeValue={setAnnualRate}
-          suffix="%"
-          decimals={1}
-        />
-        <NumberField
-          label="Meta de patrimônio (opcional)"
-          value={goalAmount || 0}
-          onChangeValue={(value) => setGoalAmount(value > 0 ? value : undefined)}
-          prefix="R$ "
-          decimals={2}
-        />
-        <NumberField
-          label="Duração da simulação (anos)"
-          value={simulationYears}
-          onChangeValue={setSimulationYears}
-          suffix=" anos"
-          decimals={0}
-        />
+        <Tooltip text="Taxa de juros anual esperada do investimento. Exemplo: 8.5% ao ano para investimentos conservadores.">
+          <NumberField
+            label="Taxa anual de investimento (%)"
+            value={annualRate}
+            onChangeValue={setAnnualRate}
+            suffix="%"
+            decimals={1}
+          />
+        </Tooltip>
+        <Tooltip text="Valor de patrimônio que você deseja atingir. O sistema calculará em quantos meses você alcançará essa meta.">
+          <NumberField
+            label="Meta de patrimônio (opcional)"
+            value={goalAmount || 0}
+            onChangeValue={(value) => setGoalAmount(value > 0 ? value : undefined)}
+            prefix="R$ "
+            decimals={2}
+          />
+        </Tooltip>
+        <Tooltip text="Quantos anos você deseja simular a projeção financeira. Recomendado: 10-30 anos para planejamento de longo prazo.">
+          <NumberField
+            label="Duração da simulação (anos)"
+            value={simulationYears}
+            onChangeValue={setSimulationYears}
+            suffix=" anos"
+            decimals={0}
+          />
+        </Tooltip>
+
+        <Separator />
 
         <SectionHeader
           title="Meses Destacados"
@@ -422,30 +437,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  backButton: {
-    padding: Spacing.xs,
-  },
-  headerTitle: {
-    ...Typography.h3,
-  },
-  placeholder: {
-    width: 40,
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: Spacing.lg,
     paddingBottom: Spacing.xxl,
+    gap: Spacing.md,
   },
   label: {
     ...Typography.label,

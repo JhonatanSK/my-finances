@@ -117,3 +117,26 @@ export function getHighlightedMonthValues(
     })
     .filter((v): v is NonNullable<typeof v> => v !== null);
 }
+
+/**
+ * Find when investment yield will cover monthly outflow
+ * Returns the month when yieldAmount >= monthlyOutflow
+ */
+export function findInvestmentCoverageDate(
+  projections: MonthlyProjection[],
+  monthlyOutflow: number
+): { coverageIndex: number | null; coverageDate: string | null } {
+  if (monthlyOutflow <= 0) {
+    return { coverageIndex: null, coverageDate: null };
+  }
+
+  for (const p of projections) {
+    // yieldAmount is the monthly return on investment
+    // We check when it covers the monthly outflow
+    if (p.yieldAmount >= monthlyOutflow) {
+      return { coverageIndex: p.monthIndex, coverageDate: p.date };
+    }
+  }
+
+  return { coverageIndex: null, coverageDate: null };
+}

@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { SectionHeader } from '@/components/ui/SectionHeader';
-import { StatCard } from '@/components/ui/StatCard';
 import { ProjectionCompareChart } from '@/components/snapshots/ProjectionCompareChart';
+import { CustomHeader } from '@/components/ui/CustomHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { useReports } from '@/hooks/useReports';
-import { useSnapshots } from '@/hooks/useSnapshots';
-import { useSnapshot } from '@/hooks/useSnapshots';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
-import { Spacing, BorderRadius } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { formatCurrency, formatPercent } from '@/utils/format';
+import { useReports } from '@/hooks/useReports';
+import { useSnapshot, useSnapshots } from '@/hooks/useSnapshots';
 import { formatDate, formatMonthYear } from '@/utils/date';
+import { formatCurrency } from '@/utils/format';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import {
+    ActivityIndicator,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export const options = {
+  headerShown: false,
+};
 
 export default function SnapshotsCompareScreen() {
   const router = useRouter();
@@ -74,7 +74,7 @@ export default function SnapshotsCompareScreen() {
 
   if (isLoadingA || (snapshotIdB && snapshotIdB !== 'current' && isLoadingB)) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.tint} />
           <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
@@ -87,7 +87,7 @@ export default function SnapshotsCompareScreen() {
 
   if (!snapshotA && !snapshotIdB) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <View style={styles.errorContainer}>
           <Text style={[styles.errorText, { color: colors.text }]}>
             Selecione pelo menos uma visão para comparar
@@ -99,22 +99,11 @@ export default function SnapshotsCompareScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Comparar Visões</Text>
-          {report && (
-            <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-              {report.name}
-            </Text>
-          )}
-        </View>
-        <View style={styles.placeholder} />
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <CustomHeader
+        title="Comparar Visões"
+        subtitle={report?.name}
+      />
 
       <ScrollView
         style={styles.scrollView}
@@ -280,30 +269,6 @@ export default function SnapshotsCompareScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: Spacing.xs,
-    marginRight: Spacing.sm,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    ...Typography.h3,
-  },
-  headerSubtitle: {
-    ...Typography.bodySmall,
-    marginTop: 2,
-  },
-  placeholder: {
-    width: 40,
   },
   scrollView: {
     flex: 1,

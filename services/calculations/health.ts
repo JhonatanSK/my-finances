@@ -1,4 +1,6 @@
 import { Report } from '@/models/report';
+import { MonthlyProjection } from '@/models/projections';
+import { findInvestmentCoverageDate } from './projections';
 
 export interface HealthSummary {
   monthlyInflow: number;
@@ -11,12 +13,22 @@ export interface HealthSummary {
   monthlyLeftoverWithInvest: number;
   percentOutflowWithInvest: number | null;
   percentKeptWithInvest: number | null;
+
+  // Retorno mensal do investimento e cobertura de custos
+  monthlyInvestmentYield: number; // Retorno mensal do patrimônio investido
+  investmentCoveragePercent: number | null; // Porcentagem de cobertura dos custos (yield / outflow)
+  investmentCoversOutflow: boolean; // Se o retorno cobre os custos mensais
+  investmentCoverageDate: string | null; // Data quando o retorno vai cobrir todos os custos
+  investmentCoverageIndex: number | null; // Índice do mês quando o retorno vai cobrir todos os custos
 }
 
 /**
  * Calculate monthly financial health summary for a report
  */
-export function calculateHealthSummary(report: Report): HealthSummary {
+export function calculateHealthSummary(
+  report: Report,
+  projections?: MonthlyProjection[]
+): HealthSummary {
   const monthlyInflow = report.inflowItems.reduce((sum, item) => sum + item.amount, 0);
   const monthlyOutflow = report.outflowItems.reduce((sum, item) => sum + item.amount, 0);
   const monthlyLeftover = monthlyInflow - monthlyOutflow;
@@ -51,6 +63,23 @@ export function calculateHealthSummary(report: Report): HealthSummary {
     percentOutflowWithInvest = 1 - percentKeptWithInvest;
   }
 
+  // Cálculo da cobertura de custos pelo retorno do investimento
+  const monthlyInvestmentYield = yieldOnInitialAmount;
+  let investmentCoveragePercent: number | null = null;
+  if (monthlyOutflow > 0) {
+    investmentCoveragePercent = monthlyInvestmentYield / monthlyOutflow;
+  }
+  const investmentCoversOutflow = monthlyInvestmentYield >= monthlyOutflow;
+
+  // Calcular quando o retorno vai cobrir todos os custos (se houver projeções)
+  let investmentCoverageDate: string | null = null;
+  let investmentCoverageIndex: number | null = null;
+  if (projections && projections.length > 0 && !investmentCoversOutflow) {
+    const coverage = findInvestmentCoverageDate(projections, monthlyOutflow);
+    investmentCoverageDate = coverage.coverageDate;
+    investmentCoverageIndex = coverage.coverageIndex;
+  }
+
   return {
     monthlyInflow,
     monthlyOutflow,
@@ -60,6 +89,11 @@ export function calculateHealthSummary(report: Report): HealthSummary {
     monthlyLeftoverWithInvest,
     percentOutflowWithInvest,
     percentKeptWithInvest,
+    monthlyInvestmentYield,
+    investmentCoveragePercent,
+    investmentCoversOutflow,
+    investmentCoverageDate,
+    investmentCoverageIndex,
   };
 }
 

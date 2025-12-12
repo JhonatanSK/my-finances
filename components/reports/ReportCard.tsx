@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   content: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
   },
   header: {
     flexDirection: 'row',

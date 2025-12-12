@@ -1,3 +1,4 @@
+export * from './CustomHeader';
 export * from './EmptyState';
 export * from './ErrorState';
 export * from './FAB';
@@ -5,5 +6,7 @@ export * from './LoadingState';
 export * from './NumberField';
 export * from './PrimaryButton';
 export * from './SectionHeader';
+export * from './Separator';
 export * from './StatCard';
 export * from './TextField';
+export * from './Tooltip';

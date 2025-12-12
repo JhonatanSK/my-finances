@@ -1,6 +1,7 @@
 import { HealthSummaryCard } from '@/components/reports/HealthSummaryCard';
+import { ProjectionAccordion } from '@/components/reports/ProjectionAccordion';
 import { ProjectionChart } from '@/components/reports/ProjectionChart';
-import { ProjectionTable } from '@/components/reports/ProjectionTable';
+import { CustomHeader } from '@/components/ui/CustomHeader';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { NumberField } from '@/components/ui/NumberField';
@@ -24,10 +25,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+export const options = {
+  headerShown: false,
+};
 
 export default function ReportDetailScreen() {
   const router = useRouter();
@@ -56,7 +60,7 @@ export default function ReportDetailScreen() {
   if (!report || !id) {
     if (error) {
       return (
-        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
           <ErrorState
             message={error}
             onRetry={() => {
@@ -68,13 +72,13 @@ export default function ReportDetailScreen() {
       );
     }
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <LoadingState message="Carregando relatório..." />
       </SafeAreaView>
     );
   }
 
-  const health = calculateHealthSummary(report);
+  const health = calculateHealthSummary(report, projections);
 
   const handleUpdateInitialAmount = async () => {
     if (tempInitialAmount === report.initialAmount) return;
@@ -110,32 +114,15 @@ export default function ReportDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]} numberOfLines={1}>
-            {report.name}
-          </Text>
-          {report.description && (
-            <Text
-              style={[styles.headerSubtitle, { color: colors.textSecondary }]}
-              numberOfLines={1}
-            >
-              {report.description}
-            </Text>
-          )}
-        </View>
-        <TouchableOpacity
-          onPress={() => router.push(`/report/${id}/edit`)}
-          style={styles.editButton}
-        >
-          <Ionicons name="create-outline" size={24} color={colors.tint} />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <CustomHeader
+        title={report.name }
+        subtitle={report.description}
+        rightAction={{
+          icon: 'create-outline',
+          onPress: () => router.push(`/report/${id}/edit`),
+        }}
+      />
 
       <ScrollView
         style={styles.scrollView}
@@ -203,7 +190,7 @@ export default function ReportDetailScreen() {
 
         {/* Tabela mês a mês */}
         <SectionHeader title="Projeção Mês a Mês" icon="calendar-outline" />
-        <ProjectionTable projections={projections} />
+        <ProjectionAccordion projections={projections} />
 
         {/* Snapshots */}
         <SectionHeader title="Visões Salvas" icon="camera-outline" />
@@ -247,31 +234,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: Spacing.xs,
-    marginRight: Spacing.sm,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    ...Typography.h3,
-  },
-  headerSubtitle: {
-    ...Typography.bodySmall,
-    marginTop: 2,
-  },
-  editButton: {
-    padding: Spacing.xs,
-    marginLeft: Spacing.sm,
-  },
   scrollView: {
     flex: 1,
   },
@@ -280,12 +242,12 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xxl,
   },
   updateSection: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     marginBottom: Spacing.md,
   },
   goalSection: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     marginBottom: Spacing.md,
   },
@@ -321,7 +283,7 @@ const styles = StyleSheet.create({
     ...Typography.body,
   },
   snapshotsSection: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     marginBottom: Spacing.md,
   },

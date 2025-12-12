@@ -1,27 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { SnapshotCard } from '@/components/snapshots/SnapshotCard';
-import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { SectionHeader } from '@/components/ui/SectionHeader';
+import { CustomHeader } from '@/components/ui/CustomHeader';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { Spacing } from '@/constants/spacing';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
 import { useSnapshots } from '@/hooks/useSnapshots';
-import { Colors } from '@/constants/theme';
-import { Spacing } from '@/constants/spacing';
-import { Typography } from '@/constants/typography';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+    Alert,
+    FlatList,
+    StyleSheet,
+    View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export const options = {
+  headerShown: false,
+};
 
 export default function ReportSnapshotsListScreen() {
   const router = useRouter();
@@ -81,29 +80,18 @@ export default function ReportSnapshotsListScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <LoadingState message="Carregando visões..." />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Histórico de Visões</Text>
-          {report && (
-            <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-              {report.name}
-            </Text>
-          )}
-        </View>
-        <View style={styles.placeholder} />
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <CustomHeader
+        title="Histórico de Visões"
+        subtitle={report?.name}
+      />
 
       {snapshots.length > 0 && (
         <View style={[styles.compareButtonContainer, { backgroundColor: colors.background }]}>
@@ -135,30 +123,6 @@ export default function ReportSnapshotsListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: Spacing.xs,
-    marginRight: Spacing.sm,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    ...Typography.h3,
-  },
-  headerSubtitle: {
-    ...Typography.bodySmall,
-    marginTop: 2,
-  },
-  placeholder: {
-    width: 40,
   },
   compareButtonContainer: {
     paddingHorizontal: Spacing.lg,

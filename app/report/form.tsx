@@ -1,29 +1,35 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  Platform,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Ionicons } from '@expo/vector-icons';
-import { TextField } from '@/components/ui/TextField';
+import { CustomHeader } from '@/components/ui/CustomHeader';
 import { NumberField } from '@/components/ui/NumberField';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import { useReports } from '@/hooks/useReports';
+import { Separator } from '@/components/ui/Separator';
+import { TextField } from '@/components/ui/TextField';
+import { Tooltip } from '@/components/ui/Tooltip';
+import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
-import { Spacing, BorderRadius } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Report, InflowItem, OutflowItem, HighlightMonth } from '@/models/report';
+import { useReports } from '@/hooks/useReports';
+import { HighlightMonth, InflowItem, OutflowItem } from '@/models/report';
 import { generateId } from '@/utils/uuid';
-import { getCurrentDate } from '@/utils/date';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export const options = {
+  headerShown: false,
+};
 
 export default function ReportFormScreen() {
   const router = useRouter();
@@ -153,14 +159,8 @@ export default function ReportFormScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Novo Relatório</Text>
-        <View style={styles.placeholder} />
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <CustomHeader title="Novo Relatório" />
 
       <ScrollView
         style={styles.scrollView}
@@ -210,6 +210,8 @@ export default function ReportFormScreen() {
           decimals={2}
         />
 
+        <Separator />
+
         {/* Entradas mensais */}
         <SectionHeader
           title="Entradas Mensais"
@@ -256,6 +258,8 @@ export default function ReportFormScreen() {
           </TouchableOpacity>
         )}
 
+        <Separator />
+
         {/* Saídas mensais */}
         <SectionHeader
           title="Saídas Mensais"
@@ -300,29 +304,39 @@ export default function ReportFormScreen() {
           </TouchableOpacity>
         )}
 
+        <Separator />
+
         {/* Investimento e meta */}
         <SectionHeader title="Investimento e Meta" icon="trending-up-outline" />
-        <NumberField
-          label="Taxa anual de investimento (%)"
-          value={annualRate}
-          onChangeValue={setAnnualRate}
-          suffix="%"
-          decimals={1}
-        />
-        <NumberField
-          label="Meta de patrimônio (opcional)"
-          value={goalAmount || 0}
-          onChangeValue={(value) => setGoalAmount(value > 0 ? value : undefined)}
-          prefix="R$ "
-          decimals={2}
-        />
-        <NumberField
-          label="Duração da simulação (anos)"
-          value={simulationYears}
-          onChangeValue={setSimulationYears}
-          suffix=" anos"
-          decimals={0}
-        />
+        <Tooltip text="Taxa de juros anual esperada do investimento. Exemplo: 8.5% ao ano para investimentos conservadores.">
+          <NumberField
+            label="Taxa anual de investimento (%)"
+            value={annualRate}
+            onChangeValue={setAnnualRate}
+            suffix="%"
+            decimals={1}
+          />
+        </Tooltip>
+        <Tooltip text="Valor de patrimônio que você deseja atingir. O sistema calculará em quantos meses você alcançará essa meta.">
+          <NumberField
+            label="Meta de patrimônio (opcional)"
+            value={goalAmount || 0}
+            onChangeValue={(value) => setGoalAmount(value > 0 ? value : undefined)}
+            prefix="R$ "
+            decimals={2}
+          />
+        </Tooltip>
+        <Tooltip text="Quantos anos você deseja simular a projeção financeira. Recomendado: 10-30 anos para planejamento de longo prazo.">
+          <NumberField
+            label="Duração da simulação (anos)"
+            value={simulationYears}
+            onChangeValue={setSimulationYears}
+            suffix=" anos"
+            decimals={0}
+          />
+        </Tooltip>
+
+        <Separator />
 
         {/* Meses destacados */}
         <SectionHeader
@@ -388,30 +402,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  backButton: {
-    padding: Spacing.xs,
-  },
-  headerTitle: {
-    ...Typography.h3,
-  },
-  placeholder: {
-    width: 40,
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: Spacing.lg,
     paddingBottom: Spacing.xxl,
+    gap: Spacing.md,
   },
   label: {
     ...Typography.label,

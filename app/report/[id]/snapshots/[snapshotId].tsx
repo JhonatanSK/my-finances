@@ -1,5 +1,6 @@
 import { ProjectionChart } from '@/components/reports/ProjectionChart';
 import { ProjectionTable } from '@/components/reports/ProjectionTable';
+import { CustomHeader } from '@/components/ui/CustomHeader';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { SectionHeader } from '@/components/ui/SectionHeader';
@@ -12,17 +13,19 @@ import { useReports } from '@/hooks/useReports';
 import { useSnapshot } from '@/hooks/useSnapshots';
 import { formatDate, formatMonthYear } from '@/utils/date';
 import { formatCurrency, formatPercent } from '@/utils/format';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+export const options = {
+  headerShown: false,
+};
 
 export default function SnapshotDetailScreen() {
   const router = useRouter();
@@ -36,7 +39,7 @@ export default function SnapshotDetailScreen() {
 
   if (isLoadingSnapshot || !snapshot) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <LoadingState message="Carregando visão..." />
       </SafeAreaView>
     );
@@ -51,24 +54,11 @@ export default function SnapshotDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>
-            Visão de {formatDate(snapshot.createdAt)}
-          </Text>
-          {report && (
-            <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-              {report.name}
-            </Text>
-          )}
-        </View>
-        <View style={styles.placeholder} />
-      </View>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+      <CustomHeader
+        title={`Visão de ${formatDate(snapshot.createdAt)}`}
+        subtitle={report?.name}
+      />
 
       <ScrollView
         style={styles.scrollView}
@@ -207,30 +197,6 @@ export default function SnapshotDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-  },
-  backButton: {
-    padding: Spacing.xs,
-    marginRight: Spacing.sm,
-  },
-  headerContent: {
-    flex: 1,
-  },
-  headerTitle: {
-    ...Typography.h3,
-  },
-  headerSubtitle: {
-    ...Typography.bodySmall,
-    marginTop: 2,
-  },
-  placeholder: {
-    width: 40,
   },
   scrollView: {
     flex: 1,

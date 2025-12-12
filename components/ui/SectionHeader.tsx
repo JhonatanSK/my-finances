@@ -1,10 +1,10 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Colors } from '@/constants/theme';
 import { Spacing } from '@/constants/spacing';
+import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface SectionHeaderProps {
   title: string;

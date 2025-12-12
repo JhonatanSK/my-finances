@@ -1,24 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
-import { Spacing, BorderRadius } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MonthlyProjection } from '@/models/projections';
-import { formatCurrency, formatPercent } from '@/utils/format';
 import { formatMonthYear } from '@/utils/date';
+import { formatCurrency } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-interface ProjectionTableProps {
+interface ProjectionAccordionProps {
   projections: MonthlyProjection[];
-  onRowPress?: (projection: MonthlyProjection) => void;
-  compact?: boolean;
+  previewCount?: number;
 }
 
-export function ProjectionTable({ projections, onRowPress, compact = false }: ProjectionTableProps) {
+const PREVIEW_COUNT = 4;
+const MAX_HEIGHT_PERCENT = 0.65;
+
+export function ProjectionAccordion({ 
+  projections, 
+  previewCount = PREVIEW_COUNT 
+}: ProjectionAccordionProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const [isExpanded, setIsExpanded] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+
+  const screenHeight = Dimensions.get('window').height;
+  const maxHeight = screenHeight * MAX_HEIGHT_PERCENT;
+
+  const shouldShowAccordion = projections.length > previewCount;
+  const displayProjections = shouldShowAccordion 
+    ? (isExpanded ? projections : projections.slice(0, previewCount))
+    : projections; // Show all if no accordion needed
+  const remainingCount = projections.length - previewCount;
+
+  const toggleAccordion = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   const toggleRow = (monthIndex: number) => {
     const newExpanded = new Set(expandedRows);
@@ -30,29 +49,17 @@ export function ProjectionTable({ projections, onRowPress, compact = false }: Pr
     setExpandedRows(newExpanded);
   };
 
-  const renderHeader = () => (
-    <View style={[styles.headerRow, { backgroundColor: colors.surfaceSecondary }]}>
-      <Text style={[styles.headerText, { color: colors.textSecondary }]}>Mês</Text>
-      <Text style={[styles.headerText, styles.headerTextRight, { color: colors.textSecondary }]}>
-        Final
-      </Text>
-    </View>
-  );
 
-  const renderRow = ({ item }: { item: MonthlyProjection }) => {
-    const isExpanded = expandedRows.has(item.monthIndex);
+  const renderRow = ({ item, index }: { item: MonthlyProjection; index: number }) => {
+    const isRowExpanded = expandedRows.has(item.monthIndex);
     const hasMarkers = item.markers && item.markers.length > 0;
+    const isEven = index % 2 === 0;
+    const rowBackgroundColor = isEven ? 'rgba(255, 255, 255, 0.02)' : 'transparent';
 
     return (
       <TouchableOpacity
-        style={[styles.row, { backgroundColor: colors.surface }]}
-        onPress={() => {
-          if (onRowPress) {
-            onRowPress(item);
-          } else {
-            toggleRow(item.monthIndex);
-          }
-        }}
+        style={[styles.row, { backgroundColor: rowBackgroundColor }]}
+        onPress={() => toggleRow(item.monthIndex)}
         activeOpacity={0.7}
       >
         <View style={styles.rowContent}>
@@ -81,7 +88,7 @@ export function ProjectionTable({ projections, onRowPress, compact = false }: Pr
             </Text>
           </View>
 
-          {isExpanded && (
+          {isRowExpanded && (
             <View style={[styles.expandedContent, { borderTopColor: colors.border }]}>
               <View style={styles.detailRow}>
                 <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
@@ -130,6 +137,24 @@ export function ProjectionTable({ projections, onRowPress, compact = false }: Pr
     );
   };
 
+  const renderFooter = () => {
+    if (!shouldShowAccordion) return null;
+
+    return (
+      <TouchableOpacity
+        style={[styles.toggleButton, { borderTopColor: colors.border }]}
+        onPress={toggleAccordion}
+        activeOpacity={0.7}
+      >
+        <Text style={[styles.toggleText, { color: colors.tint }]}>
+          {isExpanded 
+            ? 'Mostrar menos ▲' 
+            : `Mostrar mais ${remainingCount} meses ▼`}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
   if (projections.length === 0) {
     return (
       <View style={[styles.emptyContainer, { backgroundColor: colors.surface }]}>
@@ -140,18 +165,40 @@ export function ProjectionTable({ projections, onRowPress, compact = false }: Pr
     );
   }
 
+  // Safety check
+  if (displayProjections.length === 0) {
+    return (
+      <View style={[styles.emptyContainer, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+          Nenhuma projeção para exibir
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      {renderHeader()}
-      <FlatList
-        data={projections}
-        keyExtractor={(item) => item.monthIndex.toString()}
-        renderItem={renderRow}
-        scrollEnabled={false}
-        initialNumToRender={12}
-        maxToRenderPerBatch={12}
-        windowSize={5}
-      />
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
+      {/* Fixed Header */}
+      <View style={[styles.headerRow, { backgroundColor: colors.surfaceSecondary }]}>
+        <Text style={[styles.headerText, { color: colors.textSecondary }]}>Mês</Text>
+        <Text style={[styles.headerText, styles.headerTextRight, { color: colors.textSecondary }]}>
+          Final
+        </Text>
+      </View>
+      
+      <ScrollView
+        style={[styles.list, { maxHeight }]}
+        contentContainerStyle={styles.listContent}
+        nestedScrollEnabled={true}
+        showsVerticalScrollIndicator={true}
+      >
+        {displayProjections.map((item, index) => (
+          <React.Fragment key={item.monthIndex}>
+            {renderRow({ item, index })}
+          </React.Fragment>
+        ))}
+        {renderFooter()}
+      </ScrollView>
     </View>
   );
 }
@@ -160,12 +207,21 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
+    marginBottom: Spacing.md,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  list: {
+    flexGrow: 0,
+  },
+  listContent: {
+    paddingBottom: Spacing.sm,
   },
   headerText: {
     ...Typography.label,
@@ -189,6 +245,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
+    flex: 1,
   },
   dateText: {
     ...Typography.body,
@@ -206,6 +263,7 @@ const styles = StyleSheet.create({
   },
   amountText: {
     ...Typography.number,
+    marginLeft: Spacing.sm,
   },
   expandedContent: {
     marginTop: Spacing.sm,
@@ -224,6 +282,18 @@ const styles = StyleSheet.create({
   detailValue: {
     ...Typography.numberSmall,
   },
+  toggleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.md,
+    borderTopWidth: 1,
+    gap: Spacing.xs,
+  },
+  toggleText: {
+    ...Typography.body,
+    fontWeight: '500',
+  },
   emptyContainer: {
     padding: Spacing.xl,
     borderRadius: BorderRadius.lg,
@@ -233,4 +303,3 @@ const styles = StyleSheet.create({
     ...Typography.body,
   },
 });
-

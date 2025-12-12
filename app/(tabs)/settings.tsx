@@ -1,26 +1,26 @@
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+import { BorderRadius, Spacing } from '@/constants/spacing';
+import { Colors } from '@/constants/theme';
+import { Typography } from '@/constants/typography';
+import { useSettings } from '@/contexts/SettingsContext';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useReports } from '@/hooks/useReports';
+import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   Alert,
+  Clipboard,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { Clipboard } from 'react-native';
-import { SectionHeader } from '@/components/ui/SectionHeader';
-import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { useSettings } from '@/contexts/SettingsContext';
-import { useReports } from '@/hooks/useReports';
-import { Colors } from '@/constants/theme';
-import { Spacing, BorderRadius } from '@/constants/spacing';
-import { Typography } from '@/constants/typography';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import Constants from 'expo-constants';
 
 export default function SettingsScreen() {
   const { settings, updateSettings, exportBackup, importBackup } = useSettings();
@@ -130,7 +130,7 @@ export default function SettingsScreen() {
 
         {/* Moeda e Formato */}
         <SectionHeader title="Formatação" icon="options-outline" />
-        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+        <View style={[styles.section, { backgroundColor: colors.surface, ...styles.defaultBox, gap: Spacing.md }]}>
           <View style={styles.infoItem}>
             <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Moeda padrão:</Text>
             <Text style={[styles.infoValue, { color: colors.text }]}>BRL (R$)</Text>
@@ -210,7 +210,7 @@ export default function SettingsScreen() {
 
         {/* Sobre */}
         <SectionHeader title="Sobre" icon="information-circle-outline" />
-        <View style={[styles.section, { backgroundColor: colors.surface }]}>
+        <View style={[styles.section, { backgroundColor: colors.surface, ...styles.defaultBox }]}>
           <View style={styles.aboutItem}>
             <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>Nome do app:</Text>
             <Text style={[styles.aboutValue, { color: colors.text }]}>My Finances</Text>
@@ -250,11 +250,14 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
   },
   section: {
     marginBottom: Spacing.lg,
     gap: Spacing.sm,
+  },
+  defaultBox: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
   },
   optionItem: {
     flexDirection: 'row',
@@ -276,7 +279,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
   },
   infoLabel: {
     ...Typography.body,

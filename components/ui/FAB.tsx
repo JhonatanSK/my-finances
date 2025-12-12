@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 import { Spacing, BorderRadius } from '@/constants/spacing';
@@ -14,10 +15,18 @@ interface FABProps {
 export function FAB({ icon = 'add', onPress, style }: FABProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
+  
+  // FAB should be above the bottom navigation (60px) + safe area + some spacing
+  const bottomOffset = 60 + Math.max(insets.bottom, Spacing.sm) + Spacing.md;
 
   return (
     <TouchableOpacity
-      style={[styles.fab, { backgroundColor: colors.tint }, style]}
+      style={[
+        styles.fab,
+        { backgroundColor: colors.tint, bottom: bottomOffset },
+        style,
+      ]}
       onPress={onPress}
       activeOpacity={0.8}
     >
@@ -33,7 +42,6 @@ export function FAB({ icon = 'add', onPress, style }: FABProps) {
 const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: Spacing.lg,
     right: Spacing.lg,
     width: 56,
     height: 56,
