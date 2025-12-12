@@ -3,6 +3,7 @@ import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Report } from '@/models/report';
 import { formatMonthYear } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
@@ -24,6 +25,7 @@ export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCard
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const { getGoalHit } = useReports();
+  const { t } = useTranslation();
 
   const goalHit = getGoalHit(report.id);
 
@@ -108,7 +110,7 @@ export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCard
         <View style={styles.infoRow}>
           {report.goalAmount ? (
             <View style={styles.infoItem}>
-              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Meta:</Text>
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t('report.card.goal')}</Text>
               <Text style={[styles.infoValue, { color: colors.text }]}>
                 {formatCurrency(report.goalAmount)}
               </Text>
@@ -116,7 +118,7 @@ export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCard
           ) : null}
           <View style={styles.infoItem}>
             <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
-              Valor inicial:
+              {t('report.card.initialAmount')}
             </Text>
             <Text style={[styles.infoValue, { color: colors.text }]}>
               {formatCurrency(report.initialAmount)}
@@ -129,14 +131,14 @@ export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCard
             <View style={styles.statusBadge}>
               <Ionicons name="checkmark-circle" size={16} color={colors.goalHit} />
               <Text style={[styles.statusText, { color: colors.goalHit }]}>
-                Atinge em {formatMonthYear(goalHit.goalHitDate)}
+                {t('report.card.goalHit')} {formatMonthYear(goalHit.goalHitDate)}
               </Text>
             </View>
           ) : report.goalAmount ? (
             <View style={styles.statusBadge}>
               <Ionicons name="time-outline" size={16} color={colors.warning} />
               <Text style={[styles.statusText, { color: colors.warning }]}>
-                Meta não atingida
+                {t('report.card.goalNotHit')}
               </Text>
             </View>
           ) : null}

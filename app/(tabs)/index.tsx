@@ -7,6 +7,7 @@ import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import {
@@ -22,6 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function ReportsListScreen() {
   const router = useRouter();
   const { reports, isLoading, loadReports, deleteReport, duplicateReport } = useReports();
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -40,19 +42,19 @@ export default function ReportsListScreen() {
 
   const handleDelete = (reportId: string) => {
     Alert.alert(
-      'Confirmar exclusão',
-      'Tem certeza que deseja excluir este relatório? Esta ação não pode ser desfeita.',
+      t('report.delete.title'),
+      t('report.delete.message'),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Excluir',
+          text: t('report.delete.confirm'),
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteReport(reportId);
             } catch (error) {
               console.error('Error deleting report:', error);
-              Alert.alert('Erro', 'Não foi possível excluir o relatório');
+              Alert.alert(t('common.error'), t('error.deleteError'));
             }
           },
         },
@@ -63,18 +65,19 @@ export default function ReportsListScreen() {
   const handleDuplicate = async (reportId: string) => {
     try {
       await duplicateReport(reportId);
+      Alert.alert(t('common.success'), t('report.duplicate.success'));
     } catch (error) {
       console.error('Error duplicating report:', error);
-      Alert.alert('Erro', 'Não foi possível duplicar o relatório');
+      Alert.alert(t('common.error'), t('report.duplicate.error'));
     }
   };
 
   const renderEmptyState = () => (
     <EmptyState
       icon="document-text-outline"
-      title="Nenhum relatório ainda"
-      subtitle="Crie seu primeiro relatório financeiro para começar a projetar suas metas"
-      actionLabel="Criar primeiro relatório"
+      title={t('empty.noReports')}
+      subtitle={t('empty.noReportsDescription')}
+      actionLabel={t('report.create.title')}
       onAction={handleCreateReport}
     />
   );
@@ -82,7 +85,7 @@ export default function ReportsListScreen() {
   if (isLoading && reports.length === 0) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
-        <LoadingState message="Carregando relatórios..." />
+        <LoadingState message={t('common.loading')} />
       </SafeAreaView>
     );
   }
@@ -90,7 +93,7 @@ export default function ReportsListScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>Meus Relatórios</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('navigation.reports')}</Text>
       </View>
 
       <FlatList

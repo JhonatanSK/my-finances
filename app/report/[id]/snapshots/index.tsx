@@ -8,6 +8,7 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
 import { useSnapshots } from '@/hooks/useSnapshots';
+import { useTranslation } from '@/hooks/useTranslation';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -27,6 +28,7 @@ export default function ReportSnapshotsListScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getReport } = useReports();
   const { snapshots, loadSnapshots, deleteSnapshot } = useSnapshots(id || null);
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -42,19 +44,19 @@ export default function ReportSnapshotsListScreen() {
 
   const handleDelete = (snapshotId: string) => {
     Alert.alert(
-      'Confirmar exclusão',
-      'Tem certeza que deseja excluir esta visão?',
+      t('snapshot.delete.title'),
+      t('snapshot.delete.message'),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Excluir',
+          text: t('snapshot.delete.confirm'),
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteSnapshot(snapshotId);
             } catch (error) {
               console.error('Error deleting snapshot:', error);
-              Alert.alert('Erro', 'Não foi possível excluir a visão');
+              Alert.alert(t('common.error'), t('snapshot.create.error'));
             }
           },
         },
@@ -64,7 +66,7 @@ export default function ReportSnapshotsListScreen() {
 
   const handleCompare = () => {
     if (snapshots.length < 2) {
-      Alert.alert('Aviso', 'É necessário ter pelo menos 2 visões para comparar');
+      Alert.alert(t('common.error'), t('snapshot.list.needTwoToCompare'));
       return;
     }
     router.push(`/report/${id}/snapshots/compare`);
@@ -73,15 +75,15 @@ export default function ReportSnapshotsListScreen() {
   const renderEmptyState = () => (
     <EmptyState
       icon="camera-outline"
-      title="Nenhuma visão salva ainda"
-      subtitle="Salve visões do relatório para comparar mudanças ao longo do tempo"
+      title={t('empty.noSnapshots')}
+      subtitle={t('empty.noSnapshotsDescription')}
     />
   );
 
   if (isLoading) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
-        <LoadingState message="Carregando visões..." />
+        <LoadingState message={t('common.loading')} />
       </SafeAreaView>
     );
   }
@@ -89,14 +91,14 @@ export default function ReportSnapshotsListScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <CustomHeader
-        title="Histórico de Visões"
+        title={t('snapshot.list.title')}
         subtitle={report?.name}
       />
 
       {snapshots.length > 0 && (
         <View style={[styles.compareButtonContainer, { backgroundColor: colors.background }]}>
           <PrimaryButton
-            title="Comparar visões"
+            title={t('snapshot.list.compare')}
             onPress={handleCompare}
             disabled={snapshots.length < 2}
             variant="secondary"

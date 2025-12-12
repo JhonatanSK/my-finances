@@ -3,6 +3,7 @@ import { BorderRadius, Spacing } from "@/constants/spacing";
 import { Colors } from "@/constants/theme";
 import { Typography } from "@/constants/typography";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useTranslation } from "@/hooks/useTranslation";
 import { HealthSummary } from "@/services/calculations/health";
 import { formatMonthYear } from "@/utils/date";
 import { formatCurrency, formatPercent } from "@/utils/format";
@@ -21,23 +22,24 @@ export function HealthSummaryCard({
 }: HealthSummaryCardProps) {
   const colorScheme = useColorScheme() ?? "dark";
   const colors = Colors[colorScheme];
+  const { t } = useTranslation();
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <Text style={[styles.sectionTitle, { color: colors.text }]}>
-        Saúde Financeira Mensal
+        {t('health.monthly')}
       </Text>
 
       <View style={styles.cardsContainer}>
         <View style={styles.cardRow}>
           <StatCard
-            label="Entradas"
+            label={t('health.inflows')}
             value={formatCurrency(health.monthlyInflow)}
             variant="default"
             compact={compact}
           />
           <StatCard
-            label="Saídas"
+            label={t('health.outflows')}
             value={formatCurrency(health.monthlyOutflow)}
             variant="negative"
             compact={compact}
@@ -46,13 +48,13 @@ export function HealthSummaryCard({
 
         <View style={styles.cardRow}>
           <StatCard
-            label="Sobra"
+            label={t('health.leftover')}
             value={formatCurrency(health.monthlyLeftover)}
             variant={health.monthlyLeftover >= 0 ? "positive" : "negative"}
             compact={compact}
           />
           <StatCard
-            label="% Mantido"
+            label={t('health.percentKept')}
             value={formatPercent(health.percentKept)}
             variant={
               health.percentKept && health.percentKept >= 0.3
@@ -68,17 +70,17 @@ export function HealthSummaryCard({
 
       <View style={styles.investmentSection}>
         <Text style={[styles.subsectionTitle, { color: colors.textSecondary }]}>
-          Retorno do investimento vs. custos:
+          {t('health.investmentYield')}
         </Text>
         <View style={styles.cardRow}>
           <StatCard
-            label="Retorno mensal"
+            label={t('health.monthlyYield')}
             value={formatCurrency(health.monthlyInvestmentYield)}
             variant="default"
             compact={compact}
           />
           <StatCard
-            label="Cobertura de custos"
+            label={t('health.costCoverage')}
             value={formatPercent(health.investmentCoveragePercent)}
             variant={health.investmentCoversOutflow ? "positive" : "warning"}
             compact={compact}
@@ -97,7 +99,7 @@ export function HealthSummaryCard({
                   <Text
                     style={[styles.coverageText, { color: colors.positive }]}
                   >
-                    Seus investimentos cobrem seus custos mensais
+                    {t('health.coversCosts')}
                   </Text>
                 </View>
               ) : (
@@ -108,9 +110,7 @@ export function HealthSummaryCard({
                     color={colors.warning}
                   />
                   <Text style={[styles.coverageText, { color: colors.warning }]}>
-                    Seus investimentos cobrem{" "}
-                    {formatPercent(health.investmentCoveragePercent)} dos seus
-                    custos mensais
+                    {t('health.coversPercent', { percent: formatPercent(health.investmentCoveragePercent) })}
                   </Text>
                 </View>
               )}
@@ -125,7 +125,7 @@ export function HealthSummaryCard({
                       { color: colors.positive },
                     ]}
                   >
-                    Retorno cobrirá os custos em:{" "}
+                    {t('health.willCoverIn')}{" "}
                     {formatMonthYear(health.investmentCoverageDate)}
                   </Text>
                 </View>
@@ -136,7 +136,7 @@ export function HealthSummaryCard({
                     { color: colors.warning },
                   ]}
                 >
-                  Retorno não vai cobrir todos os custos no período simulado
+                  {t('health.willNotCover')}
                 </Text>
               )}
             </View>
@@ -148,17 +148,17 @@ export function HealthSummaryCard({
 
       <View style={styles.investmentSection}>
         <Text style={[styles.subsectionTitle, { color: colors.textSecondary }]}>
-          Considerando investimento:
+          {t('health.withInvestment')}
         </Text>
         <View style={styles.cardRow}>
           <StatCard
-            label="Sobra + Invest"
+            label={t('health.leftoverWithInvest')}
             value={formatCurrency(health.monthlyLeftoverWithInvest)}
             variant="positive"
             compact={compact}
           />
           <StatCard
-            label="% Mantido + Invest"
+            label={t('health.percentKeptWithInvest')}
             value={formatPercent(health.percentKeptWithInvest)}
             variant={
               health.percentKeptWithInvest &&

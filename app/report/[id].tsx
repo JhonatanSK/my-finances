@@ -14,6 +14,7 @@ import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReport } from '@/hooks/useReports';
 import { useSnapshots } from '@/hooks/useSnapshots';
+import { useTranslation } from '@/hooks/useTranslation';
 import { formatDate, formatMonthYear } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,6 +38,7 @@ export default function ReportDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { report, projections, goalHit, health, updateReport } = useReport(id || null);
   const { snapshots, createSnapshot, loadSnapshots } = useSnapshots(id || null);
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -65,27 +67,27 @@ export default function ReportDetailScreen() {
     setError(null);
     try {
       await updateReport({ initialAmount: tempInitialAmount });
-      Alert.alert('Sucesso', 'Valor inicial atualizado');
+      Alert.alert(t('common.success'), t('error.updateSuccess'));
     } catch (error) {
       console.error('Error updating initial amount:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Não foi possível atualizar o valor inicial';
-      Alert.alert('Erro', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : t('error.updateError');
+      Alert.alert(t('common.error'), errorMessage);
       setError(errorMessage);
     } finally {
       setIsUpdating(false);
     }
-  }, [report, tempInitialAmount, updateReport]);
+  }, [report, tempInitialAmount, updateReport, t]);
 
   const handleSaveSnapshot = useCallback(async () => {
     try {
       await createSnapshot();
-      Alert.alert('Sucesso', 'Visão salva com sucesso');
+      Alert.alert(t('common.success'), t('snapshot.create.success'));
     } catch (error) {
       console.error('Error saving snapshot:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Não foi possível salvar a visão';
-      Alert.alert('Erro', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : t('snapshot.create.error');
+      Alert.alert(t('common.error'), errorMessage);
     }
-  }, [createSnapshot]);
+  }, [createSnapshot, t]);
 
   useEffect(() => {
     if (id && id !== reportIdRef.current) {
@@ -116,7 +118,7 @@ export default function ReportDetailScreen() {
     }
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
-        <LoadingState message="Carregando relatório..." />
+        <LoadingState message={t('common.loading')} />
       </SafeAreaView>
     );
   }
@@ -124,7 +126,7 @@ export default function ReportDetailScreen() {
   if (!health) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
-        <LoadingState message="Carregando relatório..." />
+        <LoadingState message={t('common.loading')} />
       </SafeAreaView>
     );
   }
@@ -146,17 +148,17 @@ export default function ReportDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Atualizar valor inicial */}
-        <SectionHeader title="Valor Atual" icon="cash-outline" />
+        <SectionHeader title={t('report.detail.currentAmount')} icon="cash-outline" />
         <View style={[styles.updateSection, { backgroundColor: colors.surface }]}>
           <NumberField
-            label="Quanto eu tenho hoje?"
+            label={t('report.detail.currentAmountQuestion')}
             value={tempInitialAmount}
             onChangeValue={setTempInitialAmount}
             prefix="R$ "
             decimals={2}
           />
           <PrimaryButton
-            title="Atualizar projeção"
+            title={t('report.detail.updateProjection')}
             onPress={handleUpdateInitialAmount}
             loading={isUpdating}
             disabled={isUpdating || tempInitialAmount === report.initialAmount}
@@ -169,10 +171,10 @@ export default function ReportDetailScreen() {
         {/* Meta */}
         {report.goalAmount && (
           <View style={[styles.goalSection, { backgroundColor: colors.surface }]}>
-            <SectionHeader title="Meta" icon="flag-outline" />
+            <SectionHeader title={t('report.detail.goal')} icon="flag-outline" />
             <View style={styles.goalContent}>
               <StatCard
-                label="Meta configurada"
+                label={t('report.detail.goalConfigured')}
                 value={formatCurrency(report.goalAmount)}
                 variant="highlight"
               />
@@ -181,7 +183,7 @@ export default function ReportDetailScreen() {
                   <Ionicons name="checkmark-circle" size={24} color={colors.goalHit} />
                   <View style={styles.goalHitText}>
                     <Text style={[styles.goalHitLabel, { color: colors.textSecondary }]}>
-                      Meta atingida em:
+                      {t('report.detail.goalHit')}
                     </Text>
                     <Text style={[styles.goalHitValue, { color: colors.goalHit }]}>
                       {formatMonthYear(goalHit.goalHitDate)}
@@ -192,7 +194,7 @@ export default function ReportDetailScreen() {
                 <View style={styles.goalNotHitContainer}>
                   <Ionicons name="time-outline" size={24} color={colors.warning} />
                   <Text style={[styles.goalNotHitText, { color: colors.warning }]}>
-                    Meta não atingida em {report.simulationYears} anos de simulação
+                    {t('report.detail.goalNotHit', { years: report.simulationYears })}
                   </Text>
                 </View>
               )}
@@ -201,24 +203,26 @@ export default function ReportDetailScreen() {
         )}
 
         {/* Gráfico de projeção */}
-        <SectionHeader title="Gráfico de Projeção" icon="bar-chart-outline" />
+        <SectionHeader title={t('report.detail.chart')} icon="bar-chart-outline" />
         <ProjectionChart projections={projections} goalAmount={report.goalAmount} />
 
         {/* Tabela mês a mês */}
-        <SectionHeader title="Projeção Mês a Mês" icon="calendar-outline" />
+        <SectionHeader title={t('report.detail.monthlyProjection')} icon="calendar-outline" />
         <ProjectionAccordion projections={projections} />
 
         {/* Snapshots */}
-        <SectionHeader title="Visões Salvas" icon="camera-outline" />
+        <SectionHeader title={t('report.detail.snapshots')} icon="camera-outline" />
         <View style={[styles.snapshotsSection, { backgroundColor: colors.surface }]}>
           <View style={styles.snapshotsSummary}>
             <Text style={[styles.snapshotsCount, { color: colors.text }]}>
-              {snapshots.length} {snapshots.length === 1 ? 'visão salva' : 'visões salvas'}
+              {snapshots.length === 1 
+                ? t('report.detail.snapshotCountOne', { count: snapshots.length })
+                : t('report.detail.snapshotCountMany', { count: snapshots.length })}
             </Text>
             {snapshots.length > 0 && (
               <View style={styles.lastSnapshot}>
                 <Text style={[styles.lastSnapshotLabel, { color: colors.textSecondary }]}>
-                  Última visão:
+                  {t('report.detail.lastSnapshot')}
                 </Text>
                 <Text style={[styles.lastSnapshotDate, { color: colors.text }]}>
                   {formatDate(snapshots[0].createdAt)}
@@ -228,13 +232,13 @@ export default function ReportDetailScreen() {
           </View>
           <View style={styles.snapshotsActions}>
             <PrimaryButton
-              title="Salvar visão de hoje"
+              title={t('report.detail.saveSnapshot')}
               onPress={handleSaveSnapshot}
               variant="secondary"
             />
             {snapshots.length > 0 && (
               <PrimaryButton
-                title="Ver histórico de visões"
+                title={t('report.detail.viewSnapshots')}
                 onPress={handleViewSnapshots}
                 variant="secondary"
               />

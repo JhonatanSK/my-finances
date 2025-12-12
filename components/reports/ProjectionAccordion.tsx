@@ -2,6 +2,7 @@ import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import { MonthlyProjection } from '@/models/projections';
 import { formatMonthYear } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
@@ -23,6 +24,7 @@ export function ProjectionAccordion({
 }: ProjectionAccordionProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
@@ -92,7 +94,7 @@ export function ProjectionAccordion({
             <View style={[styles.expandedContent, { borderTopColor: colors.border }]}>
               <View style={styles.detailRow}>
                 <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-                  Patrimônio anterior:
+                  {t('projection.previousAsset')}
                 </Text>
                 <Text style={[styles.detailValue, { color: colors.text }]}>
                   {formatCurrency(item.totalPrevious)}
@@ -100,7 +102,7 @@ export function ProjectionAccordion({
               </View>
               <View style={styles.detailRow}>
                 <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-                  Entradas:
+                  {t('projection.inflows')}
                 </Text>
                 <Text style={[styles.detailValue, { color: colors.positive }]}>
                   {formatCurrency(item.inflow)}
@@ -108,7 +110,7 @@ export function ProjectionAccordion({
               </View>
               <View style={styles.detailRow}>
                 <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-                  Saídas:
+                  {t('projection.outflows')}
                 </Text>
                 <Text style={[styles.detailValue, { color: colors.negative }]}>
                   {formatCurrency(item.outflow)}
@@ -116,7 +118,7 @@ export function ProjectionAccordion({
               </View>
               <View style={styles.detailRow}>
                 <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-                  Rendimento:
+                  {t('projection.yield')}
                 </Text>
                 <Text style={[styles.detailValue, { color: colors.positive }]}>
                   {formatCurrency(item.yieldAmount)}
@@ -124,7 +126,7 @@ export function ProjectionAccordion({
               </View>
               <View style={styles.detailRow}>
                 <Text style={[styles.detailLabel, { color: colors.textSecondary }]}>
-                  Total antes do rendimento:
+                  {t('projection.totalBeforeYield')}
                 </Text>
                 <Text style={[styles.detailValue, { color: colors.text }]}>
                   {formatCurrency(item.totalBeforeYield)}
@@ -148,8 +150,8 @@ export function ProjectionAccordion({
       >
         <Text style={[styles.toggleText, { color: colors.tint }]}>
           {isExpanded 
-            ? 'Mostrar menos ▲' 
-            : `Mostrar mais ${remainingCount} meses ▼`}
+            ? t('projection.showLess')
+            : t('projection.showMore', { count: remainingCount })}
         </Text>
       </TouchableOpacity>
     );
@@ -159,7 +161,7 @@ export function ProjectionAccordion({
     return (
       <View style={[styles.emptyContainer, { backgroundColor: colors.surface }]}>
         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-          Nenhuma projeção disponível
+          {t('projection.empty')}
         </Text>
       </View>
     );
@@ -170,7 +172,7 @@ export function ProjectionAccordion({
     return (
       <View style={[styles.emptyContainer, { backgroundColor: colors.surface }]}>
         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-          Nenhuma projeção para exibir
+          {t('projection.emptyDisplay')}
         </Text>
       </View>
     );
@@ -180,9 +182,9 @@ export function ProjectionAccordion({
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       {/* Fixed Header */}
       <View style={[styles.headerRow, { backgroundColor: colors.surfaceSecondary }]}>
-        <Text style={[styles.headerText, { color: colors.textSecondary }]}>Mês</Text>
+        <Text style={[styles.headerText, { color: colors.textSecondary }]}>{t('projection.monthHeader')}</Text>
         <Text style={[styles.headerText, styles.headerTextRight, { color: colors.textSecondary }]}>
-          Final
+          {t('projection.finalHeader')}
         </Text>
       </View>
       

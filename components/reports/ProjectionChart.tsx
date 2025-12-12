@@ -2,6 +2,7 @@ import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/useTranslation';
 import { MonthlyProjection } from '@/models/projections';
 import React, { useMemo } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
@@ -23,6 +24,7 @@ export function ProjectionChart({
 }: ProjectionChartProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const { t } = useTranslation();
   const screenWidth = Dimensions.get('window').width;
   const chartWidth = screenWidth - Spacing.lg * 2 - CHART_PADDING.left - CHART_PADDING.right;
 
@@ -113,7 +115,7 @@ export function ProjectionChart({
     return (
       <View style={[styles.container, { backgroundColor: colors.surface }]}>
         <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-          Nenhuma projeção disponível
+          {t('chart.empty')}
         </Text>
       </View>
     );
@@ -156,15 +158,15 @@ export function ProjectionChart({
                 strokeWidth={2}
                 strokeDasharray="5,5"
               />
-              <SvgText
-                x={chartWidth - 10}
-                y={goalY - CHART_PADDING.top - 5}
-                fill={colors.goalHit}
-                fontSize={10}
-                textAnchor="end"
-              >
-                Meta
-              </SvgText>
+                  <SvgText
+                    x={chartWidth - 10}
+                    y={goalY - CHART_PADDING.top - 5}
+                    fill={colors.goalHit}
+                    fontSize={10}
+                    textAnchor="end"
+                  >
+                    {t('chart.goal')}
+                  </SvgText>
             </>
           )}
 
@@ -218,18 +220,18 @@ export function ProjectionChart({
       <View style={styles.legend}>
         <View style={styles.legendItem}>
           <View style={[styles.legendLine, { backgroundColor: colors.tint }]} />
-          <Text style={[styles.legendText, { color: colors.textSecondary }]}>Patrimônio</Text>
+          <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('chart.asset')}</Text>
         </View>
         {goalAmount && (
           <View style={styles.legendItem}>
             <View style={[styles.legendLineDashed, { borderColor: colors.goalHit }]} />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>Meta</Text>
+            <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('chart.goal')}</Text>
           </View>
         )}
         {goalHitPoint && (
           <View style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: colors.goalHit }]} />
-            <Text style={[styles.legendText, { color: colors.textSecondary }]}>Meta atingida</Text>
+            <Text style={[styles.legendText, { color: colors.textSecondary }]}>{t('chart.goalHit')}</Text>
           </View>
         )}
       </View>

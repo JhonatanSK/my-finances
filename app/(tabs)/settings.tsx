@@ -6,6 +6,8 @@ import { Typography } from '@/constants/typography';
 import { useSettings } from '@/contexts/SettingsContext';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
+import { useTranslation } from '@/hooks/useTranslation';
+import { Locale } from '@/services/i18n';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import React, { useState } from 'react';
@@ -25,6 +27,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function SettingsScreen() {
   const { settings, updateSettings, exportBackup, importBackup } = useSettings();
   const { loadReports } = useReports();
+  const { t, locale, setLocale } = useTranslation();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const [importText, setImportText] = useState('');
@@ -34,6 +37,10 @@ export default function SettingsScreen() {
     updateSettings({ theme });
   };
 
+  const handleLanguageChange = (language: Locale) => {
+    setLocale(language);
+  };
+
   const handleExport = async () => {
     try {
       const jsonData = await exportBackup();
@@ -41,30 +48,30 @@ export default function SettingsScreen() {
       // Copy to clipboard
       if (Platform.OS === 'web') {
         navigator.clipboard.writeText(jsonData);
-        Alert.alert('Sucesso', 'Backup copiado para a área de transferência');
+        Alert.alert(t('common.success'), t('settings.exportSuccess'));
       } else {
         Clipboard.setString(jsonData);
-        Alert.alert('Sucesso', 'Backup copiado para a área de transferência');
+        Alert.alert(t('common.success'), t('settings.exportSuccess'));
       }
     } catch (error) {
       console.error('Error exporting backup:', error);
-      Alert.alert('Erro', 'Não foi possível exportar o backup');
+      Alert.alert(t('common.error'), t('settings.exportError'));
     }
   };
 
   const handleImport = async () => {
     if (!importText.trim()) {
-      Alert.alert('Erro', 'Por favor, cole o conteúdo do backup');
+      Alert.alert(t('common.error'), t('settings.importEmpty'));
       return;
     }
 
     Alert.alert(
-      'Confirmar importação',
-      'Isso irá substituir todos os dados atuais. Tem certeza?',
+      t('settings.importConfirm'),
+      t('settings.importMessage'),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Importar',
+          text: t('settings.import'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -72,10 +79,10 @@ export default function SettingsScreen() {
               await loadReports();
               setImportText('');
               setShowImportInput(false);
-              Alert.alert('Sucesso', 'Backup importado com sucesso');
+              Alert.alert(t('common.success'), t('settings.importSuccess'));
             } catch (error) {
               console.error('Error importing backup:', error);
-              Alert.alert('Erro', 'Não foi possível importar o backup. Verifique se o formato está correto.');
+              Alert.alert(t('common.error'), t('settings.importError'));
             }
           },
         },
@@ -109,10 +116,38 @@ export default function SettingsScreen() {
     );
   };
 
+  const renderLanguageOption = (value: Locale, label: string) => {
+    const isSelected = locale === value;
+    return (
+      <TouchableOpacity
+        style={[
+          styles.optionItem,
+          { backgroundColor: colors.surface },
+          isSelected && { borderColor: colors.tint, borderWidth: 2 },
+        ]}
+        onPress={() => handleLanguageChange(value)}
+      >
+        <View style={styles.optionContent}>
+          <Ionicons
+            name="language"
+            size={24}
+            color={isSelected ? colors.tint : colors.textSecondary}
+          />
+          <Text style={[styles.optionLabel, { color: colors.text }]}>{label}</Text>
+        </View>
+        {isSelected && (
+          <Ionicons name="checkmark-circle" size={24} color={colors.tint} />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.text }]}>Configurações</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          {t('settings.title')}
+        </Text>
       </View>
 
       <ScrollView
@@ -121,40 +156,47 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Tema */}
-        <SectionHeader title="Aparência" icon="color-palette-outline" />
+        <SectionHeader title={t('settings.appearance')} icon="color-palette-outline" />
         <View style={styles.section}>
-          {renderThemeOption('dark', 'Escuro', 'moon')}
-          {renderThemeOption('light', 'Claro', 'sunny')}
-          {renderThemeOption('system', 'Sistema', 'phone-portrait-outline')}
+          {renderThemeOption('dark', t('settings.dark'), 'moon')}
+          {renderThemeOption('light', t('settings.light'), 'sunny')}
+          {renderThemeOption('system', t('settings.system'), 'phone-portrait-outline')}
+        </View>
+
+        {/* Idioma */}
+        <SectionHeader title={t('settings.languageTitle')} icon="language-outline" />
+        <View style={styles.section}>
+          {renderLanguageOption('pt-BR', t('settings.portuguese'))}
+          {renderLanguageOption('en', t('settings.english'))}
         </View>
 
         {/* Moeda e Formato */}
-        <SectionHeader title="Formatação" icon="options-outline" />
+        <SectionHeader title={t('settings.formatting')} icon="options-outline" />
         <View style={[styles.section, { backgroundColor: colors.surface, ...styles.defaultBox, gap: Spacing.md }]}>
           <View style={styles.infoItem}>
-            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Moeda padrão:</Text>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>{t('settings.defaultCurrency')}</Text>
             <Text style={[styles.infoValue, { color: colors.text }]}>BRL (R$)</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
-              Formato numérico:
+              {t('settings.numberFormat')}
             </Text>
             <Text style={[styles.infoValue, { color: colors.text }]}>
-              {settings.numberFormat === 'pt-BR' ? 'Brasileiro' : 'Americano'}
+              {settings.numberFormat === 'pt-BR' ? t('settings.brazilian') : t('settings.american')}
             </Text>
           </View>
         </View>
 
         {/* Backup */}
-        <SectionHeader title="Backup" icon="cloud-download-outline" />
+        <SectionHeader title={t('settings.backup')} icon="cloud-download-outline" />
         <View style={styles.section}>
           <View style={[styles.backupSection, { backgroundColor: colors.surface }]}>
             <Text style={[styles.backupDescription, { color: colors.textSecondary }]}>
-              Exporte seus dados para fazer backup ou importe um backup anterior
+              {t('settings.backupDescription')}
             </Text>
 
             <PrimaryButton
-              title="Exportar Backup"
+              title={t('settings.export')}
               onPress={handleExport}
               variant="secondary"
               style={styles.backupButton}
@@ -162,7 +204,7 @@ export default function SettingsScreen() {
 
             {!showImportInput ? (
               <PrimaryButton
-                title="Importar Backup"
+                title={t('settings.import')}
                 onPress={() => setShowImportInput(true)}
                 variant="secondary"
                 style={styles.backupButton}
@@ -180,7 +222,7 @@ export default function SettingsScreen() {
                   ]}
                   value={importText}
                   onChangeText={setImportText}
-                  placeholder="Cole o conteúdo do backup aqui..."
+                  placeholder={t('settings.importPlaceholder')}
                   placeholderTextColor={colors.textSecondary}
                   multiline
                   numberOfLines={6}
@@ -188,7 +230,7 @@ export default function SettingsScreen() {
                 />
                 <View style={styles.importActions}>
                   <PrimaryButton
-                    title="Cancelar"
+                    title={t('common.cancel')}
                     onPress={() => {
                       setShowImportInput(false);
                       setImportText('');
@@ -197,7 +239,7 @@ export default function SettingsScreen() {
                     style={styles.importButton}
                   />
                   <PrimaryButton
-                    title="Importar"
+                    title={t('settings.import')}
                     onPress={handleImport}
                     variant="primary"
                     style={styles.importButton}
@@ -209,22 +251,22 @@ export default function SettingsScreen() {
         </View>
 
         {/* Sobre */}
-        <SectionHeader title="Sobre" icon="information-circle-outline" />
+        <SectionHeader title={t('settings.about')} icon="information-circle-outline" />
         <View style={[styles.section, { backgroundColor: colors.surface, ...styles.defaultBox }]}>
           <View style={styles.aboutItem}>
-            <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>Nome do app:</Text>
-            <Text style={[styles.aboutValue, { color: colors.text }]}>My Finances</Text>
+            <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>{t('settings.appName')}</Text>
+            <Text style={[styles.aboutValue, { color: colors.text }]}>Clarus</Text>
           </View>
           <View style={styles.aboutItem}>
-            <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>Versão:</Text>
+            <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>{t('settings.version')}</Text>
             <Text style={[styles.aboutValue, { color: colors.text }]}>
               {Constants.expoConfig?.version || '1.0.0'}
             </Text>
           </View>
           <View style={styles.aboutItem}>
-            <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>Descrição:</Text>
+            <Text style={[styles.aboutLabel, { color: colors.textSecondary }]}>{t('settings.description')}</Text>
             <Text style={[styles.aboutValue, { color: colors.text }]}>
-              App de finanças pessoais 100% offline para projeção de metas financeiras
+              {t('settings.descriptionText')}
             </Text>
           </View>
         </View>
@@ -327,4 +369,3 @@ const styles = StyleSheet.create({
     ...Typography.body,
   },
 });
-

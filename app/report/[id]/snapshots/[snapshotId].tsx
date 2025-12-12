@@ -11,6 +11,7 @@ import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
 import { useSnapshot } from '@/hooks/useSnapshots';
+import { useTranslation } from '@/hooks/useTranslation';
 import { formatDate, formatMonthYear } from '@/utils/date';
 import { formatCurrency, formatPercent } from '@/utils/format';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -32,6 +33,7 @@ export default function SnapshotDetailScreen() {
   const { id, snapshotId } = useLocalSearchParams<{ id: string; snapshotId: string }>();
   const { snapshot, isLoading: isLoadingSnapshot } = useSnapshot(snapshotId || null);
   const { getReport } = useReports();
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -40,7 +42,7 @@ export default function SnapshotDetailScreen() {
   if (isLoadingSnapshot || !snapshot) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
-        <LoadingState message="Carregando visão..." />
+        <LoadingState message={t('common.loading')} />
       </SafeAreaView>
     );
   }
@@ -56,7 +58,7 @@ export default function SnapshotDetailScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <CustomHeader
-        title={`Visão de ${formatDate(snapshot.createdAt)}`}
+        title={t('snapshot.detail.title', { date: formatDate(snapshot.createdAt) })}
         subtitle={report?.name}
       />
 
@@ -66,17 +68,17 @@ export default function SnapshotDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Resumo */}
-        <SectionHeader title="Resumo" icon="information-circle-outline" />
+        <SectionHeader title={t('snapshot.detail.summary')} icon="information-circle-outline" />
         <View style={[styles.summarySection, { backgroundColor: colors.surface }]}>
           <View style={styles.summaryRow}>
             <StatCard
-              label="Saldo inicial"
+              label={t('snapshot.detail.initialAmount')}
               value={formatCurrency(snapshot.initialAmountAtSnapshot)}
               variant="default"
               compact
             />
             <StatCard
-              label="Taxa anual"
+              label={t('snapshot.detail.annualRate')}
               value={formatPercent(snapshot.annualRateAtSnapshot)}
               variant="default"
               compact
@@ -85,22 +87,22 @@ export default function SnapshotDetailScreen() {
           {snapshot.goalAmountAtSnapshot && (
             <View style={styles.summaryRow}>
               <StatCard
-                label="Meta"
+                label={t('snapshot.detail.goal')}
                 value={formatCurrency(snapshot.goalAmountAtSnapshot)}
                 variant="highlight"
                 compact
               />
               {snapshot.goalHitDate ? (
                 <StatCard
-                  label="Meta atingida em"
+                  label={t('snapshot.detail.goalHit')}
                   value={formatMonthYear(snapshot.goalHitDate)}
                   variant="positive"
                   compact
                 />
               ) : (
                 <StatCard
-                  label="Status"
-                  value="Não atingida"
+                  label={t('snapshot.detail.goalNotHit')}
+                  value={t('snapshot.detail.goalNotHitValue')}
                   variant="warning"
                   compact
                 />
@@ -109,7 +111,7 @@ export default function SnapshotDetailScreen() {
           )}
           <View style={styles.summaryRow}>
             <StatCard
-              label="Patrimônio final"
+              label={t('snapshot.detail.finalAmount')}
               value={formatCurrency(snapshot.finalAmountAtEnd)}
               variant="positive"
               compact
@@ -120,7 +122,7 @@ export default function SnapshotDetailScreen() {
         {/* Destaques */}
         {snapshot.highlightedMonthValues && snapshot.highlightedMonthValues.length > 0 && (
           <>
-            <SectionHeader title="Destaques" icon="star-outline" />
+            <SectionHeader title={t('snapshot.detail.highlights')} icon="star-outline" />
             <View style={[styles.highlightsSection, { backgroundColor: colors.surface }]}>
               {snapshot.highlightedMonthValues.map((highlight, index) => (
                 <View
@@ -155,7 +157,7 @@ export default function SnapshotDetailScreen() {
         {/* Notas */}
         {snapshot.notes && (
           <>
-            <SectionHeader title="Notas" icon="document-text-outline" />
+            <SectionHeader title={t('snapshot.detail.notes')} icon="document-text-outline" />
             <View style={[styles.notesSection, { backgroundColor: colors.surface }]}>
               <Text style={[styles.notesText, { color: colors.text }]}>{snapshot.notes}</Text>
             </View>
@@ -165,7 +167,7 @@ export default function SnapshotDetailScreen() {
         {/* Gráfico da visão */}
         {snapshot.projections && snapshot.projections.length > 0 && (
           <>
-            <SectionHeader title="Gráfico da Visão" icon="bar-chart-outline" />
+            <SectionHeader title={t('snapshot.detail.chart')} icon="bar-chart-outline" />
             <ProjectionChart
               projections={snapshot.projections}
               goalAmount={snapshot.goalAmountAtSnapshot}
@@ -176,7 +178,7 @@ export default function SnapshotDetailScreen() {
         {/* Tabela de projeções */}
         {snapshot.projections && snapshot.projections.length > 0 && (
           <>
-            <SectionHeader title="Projeção Mês a Mês" icon="calendar-outline" />
+            <SectionHeader title={t('snapshot.detail.monthlyProjection')} icon="calendar-outline" />
             <ProjectionAccordion projections={snapshot.projections} />
           </>
         )}
@@ -184,7 +186,7 @@ export default function SnapshotDetailScreen() {
         {/* Botão comparar */}
         <View style={styles.compareButtonContainer}>
           <PrimaryButton
-            title="Comparar com visão atual"
+            title={t('snapshot.list.compareWithCurrent')}
             onPress={handleCompareWithCurrent}
             variant="secondary"
           />

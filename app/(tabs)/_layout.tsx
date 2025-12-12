@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -8,14 +9,39 @@ import { HapticTab } from '@/components/haptic-tab';
 import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'dark'];
   const insets = useSafeAreaInsets();
+  const { t, locale } = useTranslation();
+
+  const indexOptions = useMemo(() => ({
+    title: t('navigation.reports'),
+    tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+      <Ionicons 
+        name={focused ? 'document-text' : 'document-text-outline'} 
+        size={focused ? 26 : 24} 
+        color={color} 
+      />
+    ),
+  }), [locale]);
+
+  const settingsOptions = useMemo(() => ({
+    title: t('navigation.settings'),
+    tabBarIcon: ({ color, focused }: { color: string; focused: boolean }) => (
+      <Ionicons 
+        name={focused ? 'settings' : 'settings-outline'} 
+        size={focused ? 26 : 24} 
+        color={color} 
+      />
+    ),
+  }), [locale]);
 
   return (
     <Tabs
+      key={locale}
       screenOptions={{
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.textSecondary,
@@ -48,29 +74,11 @@ export default function TabLayout() {
       }}>
       <Tabs.Screen
         name="index"
-        options={{
-          title: 'Relatórios',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? 'document-text' : 'document-text-outline'} 
-              size={focused ? 26 : 24} 
-              color={color} 
-            />
-          ),
-        }}
+        options={indexOptions}
       />
       <Tabs.Screen
         name="settings"
-        options={{
-          title: 'Configurações',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? 'settings' : 'settings-outline'} 
-              size={focused ? 26 : 24} 
-              color={color} 
-            />
-          ),
-        }}
+        options={settingsOptions}
       />
     </Tabs>
   );

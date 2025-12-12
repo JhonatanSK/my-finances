@@ -10,6 +10,7 @@ import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
+import { useTranslation } from '@/hooks/useTranslation';
 import { HighlightMonth, InflowItem, OutflowItem } from '@/models/report';
 import { generateId } from '@/utils/uuid';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,6 +35,7 @@ export const options = {
 export default function ReportFormScreen() {
   const router = useRouter();
   const { createReport } = useReports();
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -132,19 +134,19 @@ export default function ReportFormScreen() {
 
   const validateForm = (): string | null => {
     if (!reportForm.name.trim()) {
-      return 'Nome é obrigatório';
+      return t('report.form.nameRequired');
     }
     if (reportForm.inflowItems.length === 0) {
-      return 'Adicione pelo menos uma entrada mensal';
+      return t('report.form.atLeastOneInflow');
     }
     if (reportForm.outflowItems.length === 0) {
-      return 'Adicione pelo menos uma saída mensal';
+      return t('report.form.atLeastOneOutflow');
     }
     if (reportForm.annualRate <= 0 || reportForm.annualRate > 100) {
-      return 'Taxa anual deve estar entre 0 e 100%';
+      return t('report.form.rateRange');
     }
     if (reportForm.simulationYears <= 0 || reportForm.simulationYears > 50) {
-      return 'Duração da simulação deve estar entre 1 e 50 anos';
+      return t('report.form.yearsRange');
     }
     return null;
   };
@@ -152,7 +154,7 @@ export default function ReportFormScreen() {
   const handleSave = async () => {
     const error = validateForm();
     if (error) {
-      Alert.alert('Erro', error);
+      Alert.alert(t('common.error'), error);
       return;
     }
 
@@ -179,7 +181,7 @@ export default function ReportFormScreen() {
       router.back();
     } catch (error) {
       console.error('Error creating report:', error);
-      Alert.alert('Erro', 'Não foi possível salvar o relatório');
+      Alert.alert(t('common.error'), t('error.saveError'));
     } finally {
       setIsSaving(false);
     }
@@ -187,7 +189,7 @@ export default function ReportFormScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
-      <CustomHeader title="Novo Relatório" />
+      <CustomHeader title={t('report.create.title')} />
 
       <ScrollView
         style={styles.scrollView}
@@ -195,22 +197,22 @@ export default function ReportFormScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Informações básicas */}
-        <SectionHeader title="Informações Básicas" icon="information-circle-outline" />
+        <SectionHeader title={t('report.form.basicInfo')} icon="information-circle-outline" />
         <TextField
-          label="Nome *"
+          label={`${t('report.create.name')} *`}
           value={reportForm.name}
           onChangeText={(text) => updateFormData('name', text)}
-          placeholder="Ex: Aposentadoria, Vida Geral"
+          placeholder={t('report.form.namePlaceholder')}
         />
         <TextField
-          label="Descrição"
+          label={t('report.create.description')}
           value={reportForm.description}
           onChangeText={(text) => updateFormData('description', text)}
-          placeholder="Descrição opcional do relatório"
+          placeholder={t('report.form.descriptionPlaceholder')}
           multiline
         />
         <View style={styles.dateContainer}>
-          <Text style={[styles.label, { color: colors.textSecondary }]}>Data inicial *</Text>
+          <Text style={[styles.label, { color: colors.textSecondary }]}>{t('report.form.startDate')} *</Text>
           <TouchableOpacity
             style={[styles.dateButton, { backgroundColor: colors.surfaceSecondary }]}
             onPress={() => setShowDatePicker(true)}
@@ -230,7 +232,7 @@ export default function ReportFormScreen() {
           )}
         </View>
         <NumberField
-          label="Valor inicial *"
+          label={`${t('report.create.initialAmount')} *`}
           value={reportForm.initialAmount}
           onChangeValue={(value) => updateFormData('initialAmount', value)}
           prefix="R$ "
@@ -241,23 +243,23 @@ export default function ReportFormScreen() {
 
         {/* Entradas mensais */}
         <SectionHeader
-          title="Entradas Mensais"
+          title={t('report.form.monthlyInflows')}
           icon="arrow-down-circle-outline"
-          actionLabel="+ Adicionar"
+          actionLabel={t('report.form.addAction')}
           onAction={addInflowItem}
         />
         {reportForm.inflowItems.map((item) => (
           <View key={item.id} style={[styles.itemRow, { backgroundColor: colors.surface }]}>
             <View style={styles.itemContent}>
               <TextField
-                label="Nome"
+                label={t('report.form.itemName')}
                 value={item.name}
                 onChangeText={(text) => updateInflowItem(item.id, { name: text })}
-                placeholder="Ex: Salário"
+                placeholder={t('report.form.inflowPlaceholder')}
                 style={styles.itemNameInput}
               />
               <NumberField
-                label="Valor mensal"
+                label={t('report.form.monthlyAmount')}
                 value={item.amount}
                 onChangeValue={(value) => updateInflowItem(item.id, { amount: value })}
                 prefix="R$ "
@@ -280,7 +282,7 @@ export default function ReportFormScreen() {
           >
             <Ionicons name="add-circle-outline" size={20} color={colors.tint} />
             <Text style={[styles.addButtonText, { color: colors.tint }]}>
-              Adicionar entrada
+              {t('report.form.addInflow')}
             </Text>
           </TouchableOpacity>
         )}
@@ -289,23 +291,23 @@ export default function ReportFormScreen() {
 
         {/* Saídas mensais */}
         <SectionHeader
-          title="Saídas Mensais"
+          title={t('report.form.monthlyOutflows')}
           icon="arrow-up-circle-outline"
-          actionLabel="+ Adicionar"
+          actionLabel={t('report.form.addAction')}
           onAction={addOutflowItem}
         />
         {reportForm.outflowItems.map((item) => (
           <View key={item.id} style={[styles.itemRow, { backgroundColor: colors.surface }]}>
             <View style={styles.itemContent}>
               <TextField
-                label="Nome"
+                label={t('report.form.itemName')}
                 value={item.name}
                 onChangeText={(text) => updateOutflowItem(item.id, { name: text })}
-                placeholder="Ex: Aluguel"
+                placeholder={t('report.form.outflowPlaceholder')}
                 style={styles.itemNameInput}
               />
               <NumberField
-                label="Valor mensal"
+                label={t('report.form.monthlyAmount')}
                 value={item.amount}
                 onChangeValue={(value) => updateOutflowItem(item.id, { amount: value })}
                 prefix="R$ "
@@ -327,35 +329,35 @@ export default function ReportFormScreen() {
             onPress={addOutflowItem}
           >
             <Ionicons name="add-circle-outline" size={20} color={colors.tint} />
-            <Text style={[styles.addButtonText, { color: colors.tint }]}>Adicionar saída</Text>
+            <Text style={[styles.addButtonText, { color: colors.tint }]}>{t('report.form.addOutflow')}</Text>
           </TouchableOpacity>
         )}
 
         <Separator />
 
         {/* Investimento e meta */}
-        <SectionHeader title="Investimento e Meta" icon="trending-up-outline" />
-        <Tooltip text="Taxa de juros anual esperada do investimento. Exemplo: 8.5% ao ano para investimentos conservadores.">
+        <SectionHeader title={t('report.form.investment')} icon="trending-up-outline" />
+        <Tooltip text={t('report.form.annualRateTooltip')}>
           <NumberField
-            label="Taxa anual de investimento (%)"
+            label={t('report.form.annualRate')}
             value={reportForm.annualRate}
             onChangeValue={(value) => updateFormData('annualRate', value)}
             suffix="%"
             decimals={1}
           />
         </Tooltip>
-        <Tooltip text="Valor de patrimônio que você deseja atingir. O sistema calculará em quantos meses você alcançará essa meta.">
+        <Tooltip text={t('report.form.goalAmountTooltip')}>
           <NumberField
-            label="Meta de patrimônio (opcional)"
+            label={t('report.form.goalAmount')}
             value={reportForm.goalAmount || 0}
             onChangeValue={(value) => updateFormData('goalAmount', value > 0 ? value : undefined)}
             prefix="R$ "
             decimals={2}
           />
         </Tooltip>
-        <Tooltip text="Quantos anos você deseja simular a projeção financeira. Recomendado: 10-30 anos para planejamento de longo prazo.">
+        <Tooltip text={t('report.form.simulationYearsTooltip')}>
           <NumberField
-            label="Duração da simulação (anos)"
+            label={t('report.form.simulationYears')}
             value={reportForm.simulationYears}
             onChangeValue={(value) => updateFormData('simulationYears', value)}
             suffix=" anos"
@@ -367,23 +369,23 @@ export default function ReportFormScreen() {
 
         {/* Meses destacados */}
         <SectionHeader
-          title="Meses Destacados"
+          title={t('report.form.highlightMonths')}
           icon="star-outline"
-          actionLabel="+ Adicionar"
+          actionLabel={t('report.form.addAction')}
           onAction={addHighlightMonth}
         />
         {reportForm.highlightMonths.map((item) => (
           <View key={item.id} style={[styles.itemRow, { backgroundColor: colors.surface }]}>
             <View style={styles.itemContent}>
               <TextField
-                label="Label"
+                label={t('report.form.itemName')}
                 value={item.label}
                 onChangeText={(text) => updateHighlightMonth(item.id, { label: text })}
-                placeholder="Ex: Setembro (mês 9)"
+                placeholder={t('report.form.highlightPlaceholder')}
                 style={styles.itemNameInput}
               />
               <NumberField
-                label="Índice do mês"
+                label={t('report.form.monthIndex')}
                 value={item.monthIndex}
                 onChangeValue={(value) =>
                   updateHighlightMonth(item.id, { monthIndex: Math.max(0, Math.floor(value)) })
@@ -407,14 +409,14 @@ export default function ReportFormScreen() {
           >
             <Ionicons name="add-circle-outline" size={20} color={colors.tint} />
             <Text style={[styles.addButtonText, { color: colors.tint }]}>
-              Adicionar mês destacado
+              {t('report.form.addHighlight')}
             </Text>
           </TouchableOpacity>
         )}
 
         <View style={styles.buttonContainer}>
           <PrimaryButton
-            title="Salvar"
+            title={t('common.save')}
             onPress={handleSave}
             loading={isSaving}
             disabled={isSaving}

@@ -31,6 +31,7 @@ const defaultSettings: Settings = {
   theme: 'dark',
   currency: 'BRL',
   numberFormat: 'pt-BR',
+  language: 'pt-BR',
   entitlements: defaultEntitlements,
 };
 

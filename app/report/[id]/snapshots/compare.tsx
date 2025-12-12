@@ -8,6 +8,7 @@ import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
 import { useSnapshot, useSnapshots } from '@/hooks/useSnapshots';
+import { useTranslation } from '@/hooks/useTranslation';
 import { formatDate, formatMonthYear } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
@@ -43,6 +44,7 @@ export default function SnapshotsCompareScreen() {
   const { snapshot: snapshotB, isLoading: isLoadingB } = useSnapshot(
     snapshotIdB && snapshotIdB !== 'current' ? snapshotIdB : null
   );
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -66,14 +68,14 @@ export default function SnapshotsCompareScreen() {
       : snapshotB?.projections || [];
 
   const labelA = snapshotA
-    ? `Visão de ${formatDate(snapshotA.createdAt)}`
-    : 'Visão A';
+    ? t('snapshot.detail.title', { date: formatDate(snapshotA.createdAt) })
+    : t('snapshot.compare.viewA');
   const labelB =
     snapshotIdB === 'current'
-      ? 'Visão Atual'
+      ? t('snapshot.compare.currentView')
       : snapshotB
-        ? `Visão de ${formatDate(snapshotB.createdAt)}`
-        : 'Visão B';
+        ? t('snapshot.detail.title', { date: formatDate(snapshotB.createdAt) })
+        : t('snapshot.compare.viewB');
 
   const finalAmountA =
     projectionsA.length > 0 ? projectionsA[projectionsA.length - 1].finalAmount : 0;
@@ -90,7 +92,7 @@ export default function SnapshotsCompareScreen() {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.tint} />
           <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-            Carregando comparação...
+            {t('common.loading')}
           </Text>
         </View>
       </SafeAreaView>
@@ -109,7 +111,7 @@ export default function SnapshotsCompareScreen() {
 
     const handleCompare = () => {
       if (!selectedA && !selectedB) {
-        Alert.alert('Aviso', 'Selecione pelo menos uma visão para comparar');
+        Alert.alert(t('common.error'), t('snapshot.compare.selectAtLeastOne'));
         return;
       }
       const params: any = { id };
@@ -124,7 +126,7 @@ export default function SnapshotsCompareScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <CustomHeader
-          title="Selecionar Visões"
+          title={t('snapshot.compare.selectTitle')}
           subtitle={report?.name}
         />
         <ScrollView
@@ -133,13 +135,13 @@ export default function SnapshotsCompareScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Text style={[styles.selectionTitle, { color: colors.text }]}>
-            Selecione as visões para comparar
+            {t('snapshot.compare.selectDescription')}
           </Text>
 
           {/* Visão A */}
           <View style={styles.selectionSection}>
             <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-              Visão A
+              {t('snapshot.compare.viewA')}
             </Text>
             <View style={[styles.selectionCard, { backgroundColor: colors.surface }]}>
               {snapshots.map((snapshot) => (
@@ -174,7 +176,7 @@ export default function SnapshotsCompareScreen() {
           {/* Visão B */}
           <View style={styles.selectionSection}>
             <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-              Visão B
+              {t('snapshot.compare.viewB')}
             </Text>
             <View style={[styles.selectionCard, { backgroundColor: colors.surface }]}>
               <TouchableOpacity
@@ -190,10 +192,10 @@ export default function SnapshotsCompareScreen() {
               >
                 <View style={styles.selectionItemContent}>
                   <Text style={[styles.selectionItemText, { color: colors.text }]}>
-                    Visão Atual
+                    {t('snapshot.compare.currentView')}
                   </Text>
                   <Text style={[styles.selectionItemSubtext, { color: colors.textSecondary }]}>
-                    Projeção atual do relatório
+                    {t('snapshot.compare.currentViewDescription')}
                   </Text>
                 </View>
                 {selectedB === 'current' && (
@@ -231,7 +233,7 @@ export default function SnapshotsCompareScreen() {
 
           <View style={styles.compareButtonContainer}>
             <PrimaryButton
-              title="Comparar"
+              title={t('snapshot.compare.compare')}
               onPress={handleCompare}
               disabled={!selectedA && !selectedB}
             />
@@ -246,9 +248,9 @@ export default function SnapshotsCompareScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
         <View style={styles.errorContainer}>
           <Text style={[styles.errorText, { color: colors.text }]}>
-            Selecione pelo menos uma visão para comparar
+            {t('snapshot.compare.selectAtLeastOne')}
           </Text>
-          <PrimaryButton title="Voltar" onPress={() => router.back()} />
+          <PrimaryButton title={t('common.back')} onPress={() => router.back()} />
         </View>
       </SafeAreaView>
     );
@@ -257,7 +259,7 @@ export default function SnapshotsCompareScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <CustomHeader
-        title="Comparar Visões"
+        title={t('snapshot.compare.title')}
         subtitle={report?.name}
       />
 
@@ -267,12 +269,12 @@ export default function SnapshotsCompareScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Resumo comparativo */}
-        <SectionHeader title="Resumo Comparativo" icon="stats-chart-outline" />
+        <SectionHeader title={t('snapshot.compare.summary')} icon="stats-chart-outline" />
         <View style={[styles.summarySection, { backgroundColor: colors.surface }]}>
           <View style={styles.comparisonRow}>
             <View style={styles.comparisonItem}>
               <Text style={[styles.comparisonLabel, { color: colors.textSecondary }]}>
-                Valor inicial
+                {t('snapshot.compare.initialAmount')}
               </Text>
               <Text style={[styles.comparisonValueA, { color: colors.tint }]}>
                 {snapshotA
@@ -294,7 +296,7 @@ export default function SnapshotsCompareScreen() {
             <View style={styles.comparisonRow}>
               <View style={styles.comparisonItem}>
                 <Text style={[styles.comparisonLabel, { color: colors.textSecondary }]}>
-                  Meta prevista
+                  {t('snapshot.compare.goal')}
                 </Text>
                 <Text style={[styles.comparisonValueA, { color: colors.tint }]}>
                   {snapshotA?.goalAmountAtSnapshot
@@ -315,7 +317,7 @@ export default function SnapshotsCompareScreen() {
           <View style={styles.comparisonRow}>
             <View style={styles.comparisonItem}>
               <Text style={[styles.comparisonLabel, { color: colors.textSecondary }]}>
-                Patrimônio final
+                {t('snapshot.compare.finalAmount')}
               </Text>
               <Text style={[styles.comparisonValueA, { color: colors.tint }]}>
                 {formatCurrency(finalAmountA)}
@@ -328,7 +330,7 @@ export default function SnapshotsCompareScreen() {
 
           <View style={[styles.differenceContainer, { backgroundColor: colors.surfaceSecondary }]}>
             <Text style={[styles.differenceLabel, { color: colors.textSecondary }]}>
-              Diferença:
+              {t('snapshot.compare.difference')}
             </Text>
             <Text
               style={[
@@ -344,7 +346,7 @@ export default function SnapshotsCompareScreen() {
         </View>
 
         {/* Gráfico comparativo */}
-        <SectionHeader title="Gráfico Comparativo" icon="bar-chart-outline" />
+        <SectionHeader title={t('snapshot.compare.chart')} icon="bar-chart-outline" />
         {projectionsA.length > 0 && projectionsB.length > 0 ? (
           <ProjectionCompareChart
             projectionsA={projectionsA}
@@ -355,7 +357,7 @@ export default function SnapshotsCompareScreen() {
         ) : (
           <View style={[styles.chartPlaceholder, { backgroundColor: colors.surface }]}>
             <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
-              Dados insuficientes para comparação
+              {t('snapshot.compare.insufficientData')}
             </Text>
           </View>
         )}
@@ -363,7 +365,7 @@ export default function SnapshotsCompareScreen() {
         {/* Tabela de marcos comparados */}
         {snapshotA?.highlightedMonthValues && snapshotA.highlightedMonthValues.length > 0 && (
           <>
-            <SectionHeader title="Marcos Comparados" icon="star-outline" />
+            <SectionHeader title={t('snapshot.compare.milestones')} icon="star-outline" />
             <View style={[styles.milestonesSection, { backgroundColor: colors.surface }]}>
               {snapshotA.highlightedMonthValues.map((highlight, index) => {
                 const highlightB = snapshotB?.highlightedMonthValues?.find(
