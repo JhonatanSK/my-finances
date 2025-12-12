@@ -18,7 +18,7 @@ import { formatDate, formatMonthYear } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -43,18 +43,62 @@ export default function ReportDetailScreen() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [tempInitialAmount, setTempInitialAmount] = useState(report?.initialAmount || 0);
   const [error, setError] = useState<string | null>(null);
+  const reportIdRef = useRef<string | null>(null);
+
+  // Memoizar handlers antes dos early returns
+  const handleEditReport = useCallback(() => {
+    if (id) {
+      router.push(`/report/${id}/edit`);
+    }
+  }, [id, router]);
+
+  const handleViewSnapshots = useCallback(() => {
+    if (id) {
+      router.push(`/report/${id}/snapshots`);
+    }
+  }, [id, router]);
+
+  const handleUpdateInitialAmount = useCallback(async () => {
+    if (!report || tempInitialAmount === report.initialAmount) return;
+
+    setIsUpdating(true);
+    setError(null);
+    try {
+      await updateReport({ initialAmount: tempInitialAmount });
+      Alert.alert('Sucesso', 'Valor inicial atualizado');
+    } catch (error) {
+      console.error('Error updating initial amount:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível atualizar o valor inicial';
+      Alert.alert('Erro', errorMessage);
+      setError(errorMessage);
+    } finally {
+      setIsUpdating(false);
+    }
+  }, [report, tempInitialAmount, updateReport]);
+
+  const handleSaveSnapshot = useCallback(async () => {
+    try {
+      await createSnapshot();
+      Alert.alert('Sucesso', 'Visão salva com sucesso');
+    } catch (error) {
+      console.error('Error saving snapshot:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível salvar a visão';
+      Alert.alert('Erro', errorMessage);
+    }
+  }, [createSnapshot]);
 
   useEffect(() => {
-    if (id) {
+    if (id && id !== reportIdRef.current) {
+      reportIdRef.current = id;
       loadSnapshots();
     }
   }, [id, loadSnapshots]);
 
   useEffect(() => {
-    if (report) {
+    if (report?.initialAmount !== undefined && tempInitialAmount !== report.initialAmount) {
       setTempInitialAmount(report.initialAmount);
     }
-  }, [report]);
+  }, [report?.initialAmount, tempInitialAmount]);
 
   if (!report || !id) {
     if (error) {
@@ -85,39 +129,6 @@ export default function ReportDetailScreen() {
     );
   }
 
-  const handleUpdateInitialAmount = async () => {
-    if (tempInitialAmount === report.initialAmount) return;
-
-    setIsUpdating(true);
-    setError(null);
-    try {
-      await updateReport({ initialAmount: tempInitialAmount });
-      Alert.alert('Sucesso', 'Valor inicial atualizado');
-    } catch (error) {
-      console.error('Error updating initial amount:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Não foi possível atualizar o valor inicial';
-      Alert.alert('Erro', errorMessage);
-      setError(errorMessage);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleSaveSnapshot = async () => {
-    try {
-      await createSnapshot();
-      Alert.alert('Sucesso', 'Visão salva com sucesso');
-    } catch (error) {
-      console.error('Error saving snapshot:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Não foi possível salvar a visão';
-      Alert.alert('Erro', errorMessage);
-    }
-  };
-
-  const handleViewSnapshots = () => {
-    router.push(`/report/${id}/snapshots`);
-  };
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
       <CustomHeader
@@ -125,7 +136,7 @@ export default function ReportDetailScreen() {
         subtitle={report.description}
         rightAction={{
           icon: 'create-outline',
-          onPress: () => router.push(`/report/${id}/edit`),
+          onPress: handleEditReport,
         }}
       />
 

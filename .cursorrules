@@ -1,0 +1,53 @@
+# Regras do Projeto Clarus
+
+## Organização de Documentação
+- READMEs de regras/documentação técnica: criar em `docs/rules/`, não em subpastas
+- Arquitetura: `docs/ARCHITECTURE.md`
+- Roadmap: `docs/next-steps/`
+- Prompts executados: `docs/prompts-executed/`
+
+## Arquitetura em Camadas
+1. UI Layer (`app/`, `components/`): apenas renderização
+2. Hooks/Contexts (`hooks/`, `contexts/`): orquestração de estado
+3. Services (`services/`): lógica de negócio pura
+4. Storage (`services/storage/`): persistência
+
+## Regras de Ouro
+- ❌ Nunca importar services diretamente em componentes UI
+- ❌ Nunca colocar lógica de cálculo em contexts
+- ✅ Services são funções puras quando possível
+- ✅ UI não conhece storage diretamente
+- ✅ Sempre usar hooks para acessar contexts
+
+Ver exemplos detalhados em `docs/ARCHITECTURE.md`.
+
+## Estado e Performance
+- Formulários: usar objeto único (`reportForm`) em vez de múltiplos `useState`
+- Cache: services de storage devem cachear estado
+- Re-renders: minimizar re-renders desnecessários
+
+## TypeScript
+- Tipagem forte: sempre tipos explícitos
+- Interfaces: preferir sobre types
+- Imports: externos primeiro, depois internos
+
+## Storage e Migrações
+- Versionamento: sempre incluir `schemaVersion`
+- Migrações: criar para evolução sem perder dados
+- Compatibilidade: dados antigos migráveis automaticamente
+- Validação: sempre validar após migração
+
+Ver `docs/rules/storage-migrations.md` para detalhes.
+
+## Nomenclatura
+- Componentes: PascalCase (`ReportCard.tsx`)
+- Hooks: camelCase com `use` (`useReports.ts`)
+- Services: camelCase (`LocalStorageService.ts`)
+- Types/Interfaces: PascalCase (`PersistedState`)
+- Constantes: UPPER_SNAKE_CASE (`CURRENT_SCHEMA_VERSION`)
+
+## Código
+- Remover código comentado e imports não utilizados
+- Comentários apenas quando necessário
+- Error handling adequado com try/catch
+- `console.error` para erros, `console.log` apenas para debug

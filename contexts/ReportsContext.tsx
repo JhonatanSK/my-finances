@@ -6,7 +6,7 @@ import { findGoalHit, generateProjections, getHighlightedMonthValues } from '@/s
 import { localStorageService } from '@/services/storage/LocalStorageService';
 import { getCurrentDateTime } from '@/utils/date';
 import { generateId } from '@/utils/uuid';
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 interface ReportsContextValue {
   // Reports state
@@ -44,12 +44,7 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
   const [snapshots, setSnapshots] = useState<Map<string, Snapshot[]>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load reports on mount
-  useEffect(() => {
-    loadReports();
-  }, []);
-
-  const loadReports = async () => {
+  const loadReports = useCallback(async () => {
     try {
       setIsLoading(true);
       const loadedReports = await localStorageService.getReports();
@@ -59,46 +54,57 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const getReport = (id: string): Report | null => {
-    return reports.find((r) => r.id === id) ?? null;
-  };
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
 
-  const createReport = async (
-    reportData: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<Report> => {
-    const now = getCurrentDateTime();
-    const newReport: Report = {
-      ...reportData,
-      id: generateId(),
-      createdAt: now,
-      updatedAt: now,
-    };
+  const getReport = useCallback(
+    (id: string): Report | null => {
+      return reports.find((r) => r.id === id) ?? null;
+    },
+    [reports]
+  );
 
-    await localStorageService.saveReport(newReport);
-    setReports((prev) => [...prev, newReport]);
-    return newReport;
-  };
+  const createReport = useCallback(
+    async (reportData: Omit<Report, 'id' | 'createdAt' | 'updatedAt'>): Promise<Report> => {
+      const now = getCurrentDateTime();
+      const newReport: Report = {
+        ...reportData,
+        id: generateId(),
+        createdAt: now,
+        updatedAt: now,
+      };
 
-  const updateReport = async (id: string, updates: Partial<Report>): Promise<void> => {
-    const existingReport = getReport(id);
-    if (!existingReport) {
-      throw new Error(`Report with id ${id} not found`);
-    }
+      await localStorageService.saveReport(newReport);
+      setReports((prev) => [...prev, newReport]);
+      return newReport;
+    },
+    []
+  );
 
-    const updatedReport: Report = {
-      ...existingReport,
-      ...updates,
-      id,
-      updatedAt: getCurrentDateTime(),
-    };
+  const updateReport = useCallback(
+    async (id: string, updates: Partial<Report>): Promise<void> => {
+      const existingReport = getReport(id);
+      if (!existingReport) {
+        throw new Error(`Report with id ${id} not found`);
+      }
 
-    await localStorageService.saveReport(updatedReport);
-    setReports((prev) => prev.map((r) => (r.id === id ? updatedReport : r)));
-  };
+      const updatedReport: Report = {
+        ...existingReport,
+        ...updates,
+        id,
+        updatedAt: getCurrentDateTime(),
+      };
 
-  const deleteReport = async (id: string): Promise<void> => {
+      await localStorageService.saveReport(updatedReport);
+      setReports((prev) => prev.map((r) => (r.id === id ? updatedReport : r)));
+    },
+    [getReport]
+  );
+
+  const deleteReport = useCallback(async (id: string): Promise<void> => {
     await localStorageService.deleteReport(id);
     setReports((prev) => prev.filter((r) => r.id !== id));
     // Remove snapshots from state
@@ -107,52 +113,67 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       newMap.delete(id);
       return newMap;
     });
-  };
+  }, []);
 
-  const duplicateReport = async (id: string): Promise<Report> => {
-    const existingReport = getReport(id);
-    if (!existingReport) {
-      throw new Error(`Report with id ${id} not found`);
-    }
+  const duplicateReport = useCallback(
+    async (id: string): Promise<Report> => {
+      const existingReport = getReport(id);
+      if (!existingReport) {
+        throw new Error(`Report with id ${id} not found`);
+      }
 
-    const duplicatedReport: Report = {
-      ...existingReport,
-      id: generateId(),
-      name: `${existingReport.name} (Cópia)`,
-      createdAt: getCurrentDateTime(),
-      updatedAt: getCurrentDateTime(),
-    };
+      const duplicatedReport: Report = {
+        ...existingReport,
+        id: generateId(),
+        name: `${existingReport.name} (Cópia)`,
+        createdAt: getCurrentDateTime(),
+        updatedAt: getCurrentDateTime(),
+      };
 
-    await localStorageService.saveReport(duplicatedReport);
-    setReports((prev) => [...prev, duplicatedReport]);
-    return duplicatedReport;
-  };
+      await localStorageService.saveReport(duplicatedReport);
+      setReports((prev) => [...prev, duplicatedReport]);
+      return duplicatedReport;
+    },
+    [getReport]
+  );
 
-  const getProjections = (reportId: string): MonthlyProjection[] => {
-    const report = getReport(reportId);
-    if (!report) return [];
-    return generateProjections(report);
-  };
+  const getProjections = useCallback(
+    (reportId: string): MonthlyProjection[] => {
+      const report = getReport(reportId);
+      if (!report) return [];
+      return generateProjections(report);
+    },
+    [getReport]
+  );
 
-  const getGoalHit = (reportId: string) => {
-    const report = getReport(reportId);
-    if (!report) return { goalHitIndex: null, goalHitDate: null };
-    const projections = getProjections(reportId);
-    return findGoalHit(projections, report.goalAmount);
-  };
+  const getGoalHit = useCallback(
+    (reportId: string) => {
+      const report = getReport(reportId);
+      if (!report) return { goalHitIndex: null, goalHitDate: null };
+      const projections = getProjections(reportId);
+      return findGoalHit(projections, report.goalAmount);
+    },
+    [getReport, getProjections]
+  );
 
-  const getHealthSummary = (reportId: string): HealthSummary | null => {
-    const report = getReport(reportId);
-    if (!report) return null;
-    const projections = getProjections(reportId);
-    return calculateHealthSummary(report, projections);
-  };
+  const getHealthSummary = useCallback(
+    (reportId: string): HealthSummary | null => {
+      const report = getReport(reportId);
+      if (!report) return null;
+      const projections = getProjections(reportId);
+      return calculateHealthSummary(report, projections);
+    },
+    [getReport, getProjections]
+  );
 
-  const getSnapshots = (reportId: string): Snapshot[] => {
-    return snapshots.get(reportId) ?? [];
-  };
+  const getSnapshots = useCallback(
+    (reportId: string): Snapshot[] => {
+      return snapshots.get(reportId) ?? [];
+    },
+    [snapshots]
+  );
 
-  const loadSnapshots = async (reportId: string): Promise<void> => {
+  const loadSnapshots = useCallback(async (reportId: string): Promise<void> => {
     try {
       const loadedSnapshots = await localStorageService.getSnapshotsByReport(reportId);
       setSnapshots((prev) => {
@@ -163,49 +184,52 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
     } catch (error) {
       console.error('Error loading snapshots:', error);
     }
-  };
+  }, []);
 
-  const createSnapshot = async (reportId: string, notes?: string): Promise<Snapshot> => {
-    const report = getReport(reportId);
-    if (!report) {
-      throw new Error(`Report with id ${reportId} not found`);
-    }
+  const createSnapshot = useCallback(
+    async (reportId: string, notes?: string): Promise<Snapshot> => {
+      const report = getReport(reportId);
+      if (!report) {
+        throw new Error(`Report with id ${reportId} not found`);
+      }
 
-    const projections = getProjections(reportId);
-    const goalHit = findGoalHit(projections, report.goalAmount);
-    const finalAmount = projections.length > 0 ? projections[projections.length - 1].finalAmount : 0;
-    const highlightedMonthValues = getHighlightedMonthValues(projections, report.highlightMonths);
+      const projections = getProjections(reportId);
+      const goalHit = findGoalHit(projections, report.goalAmount);
+      const finalAmount = projections.length > 0 ? projections[projections.length - 1].finalAmount : 0;
+      const highlightedMonthValues = getHighlightedMonthValues(projections, report.highlightMonths);
 
-    const snapshot: Snapshot = {
-      id: generateId(),
-      reportId,
-      createdAt: getCurrentDateTime(),
-      initialAmountAtSnapshot: report.initialAmount,
-      annualRateAtSnapshot: report.annualRate,
-      goalAmountAtSnapshot: report.goalAmount,
-      simulationYearsAtSnapshot: report.simulationYears,
-      goalHitMonthIndex: goalHit.goalHitIndex,
-      goalHitDate: goalHit.goalHitDate,
-      finalAmountAtEnd: finalAmount,
-      highlightedMonthValues,
-      notes,
-      projections, // Save full projections for comparison
-    };
+      const snapshot: Snapshot = {
+        id: generateId(),
+        reportId,
+        createdAt: getCurrentDateTime(),
+        initialAmountAtSnapshot: report.initialAmount,
+        annualRateAtSnapshot: report.annualRate,
+        goalAmountAtSnapshot: report.goalAmount,
+        simulationYearsAtSnapshot: report.simulationYears,
+        goalHitMonthIndex: goalHit.goalHitIndex,
+        goalHitDate: goalHit.goalHitDate,
+        finalAmountAtEnd: finalAmount,
+        highlightedMonthValues,
+        notes,
+        projections, // Save full projections for comparison
+      };
 
-    await localStorageService.saveSnapshot(snapshot);
-    
-    // Update local state
-    setSnapshots((prev) => {
-      const newMap = new Map(prev);
-      const currentSnapshots = newMap.get(reportId) ?? [];
-      newMap.set(reportId, [snapshot, ...currentSnapshots]);
-      return newMap;
-    });
+      await localStorageService.saveSnapshot(snapshot);
+      
+      // Update local state
+      setSnapshots((prev) => {
+        const newMap = new Map(prev);
+        const currentSnapshots = newMap.get(reportId) ?? [];
+        newMap.set(reportId, [snapshot, ...currentSnapshots]);
+        return newMap;
+      });
 
-    return snapshot;
-  };
+      return snapshot;
+    },
+    [getReport, getProjections]
+  );
 
-  const deleteSnapshot = async (snapshotId: string): Promise<void> => {
+  const deleteSnapshot = useCallback(async (snapshotId: string): Promise<void> => {
     await localStorageService.deleteSnapshot(snapshotId);
     
     // Update local state
@@ -221,25 +245,44 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       }
       return newMap;
     });
-  };
+  }, []);
 
-  const value: ReportsContextValue = {
-    reports,
-    isLoading,
-    loadReports,
-    getReport,
-    createReport,
-    updateReport,
-    deleteReport,
-    duplicateReport,
-    getProjections,
-    getGoalHit,
-    getHealthSummary,
-    getSnapshots,
-    loadSnapshots,
-    createSnapshot,
-    deleteSnapshot,
-  };
+  const value: ReportsContextValue = useMemo(
+    () => ({
+      reports,
+      isLoading,
+      loadReports,
+      getReport,
+      createReport,
+      updateReport,
+      deleteReport,
+      duplicateReport,
+      getProjections,
+      getGoalHit,
+      getHealthSummary,
+      getSnapshots,
+      loadSnapshots,
+      createSnapshot,
+      deleteSnapshot,
+    }),
+    [
+      reports,
+      isLoading,
+      loadReports,
+      getReport,
+      createReport,
+      updateReport,
+      deleteReport,
+      duplicateReport,
+      getProjections,
+      getGoalHit,
+      getHealthSummary,
+      getSnapshots,
+      loadSnapshots,
+      createSnapshot,
+      deleteSnapshot,
+    ]
+  );
 
   return <ReportsContext.Provider value={value}>{children}</ReportsContext.Provider>;
 }

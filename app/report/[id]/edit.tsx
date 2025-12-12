@@ -16,7 +16,7 @@ import { generateId } from '@/utils/uuid';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -36,7 +36,7 @@ export const options = {
 export default function ReportEditScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getReport, updateReport } = useReports();
+  const { updateReport, getReport } = useReports();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
@@ -57,6 +57,7 @@ export default function ReportEditScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
 
   const updateFormData = <K extends keyof typeof reportForm>(
     key: K,
@@ -66,7 +67,8 @@ export default function ReportEditScreen() {
   };
 
   useEffect(() => {
-    if (report) {
+    // Evitar re-inicialização quando o report muda de referência mas é o mesmo
+    if (report && !isInitialized.current) {
       setReportForm({
         name: report.name,
         description: report.description || '',
@@ -80,13 +82,14 @@ export default function ReportEditScreen() {
         highlightMonths: [...report.highlightMonths],
       });
       setIsLoading(false);
-    } else if (id) {
+      isInitialized.current = true;
+    } else if (id && !report && !isLoading) {
       Alert.alert('Erro', 'Relatório não encontrado', [
         { text: 'OK', onPress: () => router.back() },
       ]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [report, id]);
+  }, [report?.id, id]);
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');

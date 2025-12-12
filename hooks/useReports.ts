@@ -1,41 +1,74 @@
 import { useReportsContext } from '@/contexts/ReportsContext';
 import { Report } from '@/models/report';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 /**
  * Hook to access and manage reports
  */
 export function useReports() {
-  const context = useReportsContext();
+  const {
+    reports,
+    isLoading,
+    loadReports,
+    getReport,
+    loadSnapshots,
+    createReport,
+    updateReport,
+    deleteReport,
+    duplicateReport,
+    getProjections,
+    getGoalHit,
+    getHealthSummary,
+  } = useReportsContext();
 
   // Auto-load snapshots when accessing a report
-  const getReportWithSnapshots = async (id: string): Promise<Report | null> => {
-    const report = context.getReport(id);
-    if (report) {
-      await context.loadSnapshots(id);
-    }
-    return report;
-  };
+  const getReportWithSnapshots = useCallback(
+    async (id: string): Promise<Report | null> => {
+      const report = getReport(id);
+      if (report) {
+        await loadSnapshots(id);
+      }
+      return report;
+    },
+    [getReport, loadSnapshots]
+  );
 
-  return {
-    // State
-    reports: context.reports,
-    isLoading: context.isLoading,
+  // Memoizar o retorno para evitar criar novo objeto a cada render
+  return useMemo(
+    () => ({
+      // State
+      reports,
+      isLoading,
 
-    // Methods
-    loadReports: context.loadReports,
-    getReport: context.getReport,
-    getReportWithSnapshots,
-    createReport: context.createReport,
-    updateReport: context.updateReport,
-    deleteReport: context.deleteReport,
-    duplicateReport: context.duplicateReport,
+      // Methods
+      loadReports,
+      getReport,
+      getReportWithSnapshots,
+      createReport,
+      updateReport,
+      deleteReport,
+      duplicateReport,
 
-    // Projections
-    getProjections: context.getProjections,
-    getGoalHit: context.getGoalHit,
-    getHealthSummary: context.getHealthSummary,
-  };
+      // Projections
+      getProjections,
+      getGoalHit,
+      getHealthSummary,
+    }),
+    [
+      reports,
+      isLoading,
+      loadReports,
+      getReport,
+      createReport,
+      updateReport,
+      deleteReport,
+      duplicateReport,
+      getProjections,
+      getGoalHit,
+      getHealthSummary,
+      getReportWithSnapshots,
+    ]
+  );
 }
 
 /**
@@ -50,27 +83,29 @@ export function useReport(reportId: string | null) {
     }
   }, [reportId, loadSnapshots]);
 
-  if (!reportId) {
+  return useMemo(() => {
+    if (!reportId) {
+      return {
+        report: null,
+        projections: [],
+        goalHit: { goalHitIndex: null, goalHitDate: null },
+        health: null,
+        updateReport: async () => {},
+      };
+    }
+
+    const report = getReport(reportId);
+    const projections = report ? getProjections(reportId) : [];
+    const goalHit = report ? getGoalHit(reportId) : { goalHitIndex: null, goalHitDate: null };
+    const health = report ? getHealthSummary(reportId) : null;
+
     return {
-      report: null,
-      projections: [],
-      goalHit: { goalHitIndex: null, goalHitDate: null },
-      health: null,
-      updateReport: async () => {},
+      report,
+      projections,
+      goalHit,
+      health,
+      updateReport: (updates: Partial<Report>) => updateReport(reportId, updates),
     };
-  }
-
-  const report = getReport(reportId);
-  const projections = report ? getProjections(reportId) : [];
-  const goalHit = report ? getGoalHit(reportId) : { goalHitIndex: null, goalHitDate: null };
-  const health = report ? getHealthSummary(reportId) : null;
-
-  return {
-    report,
-    projections,
-    goalHit,
-    health,
-    updateReport: (updates: Partial<Report>) => updateReport(reportId, updates),
-  };
+  }, [reportId, getReport, getProjections, getGoalHit, getHealthSummary, updateReport]);
 }
 

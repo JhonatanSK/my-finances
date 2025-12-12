@@ -88,7 +88,7 @@ export function HealthSummaryCard({
           <>
             <View style={styles.coverageInfo}>
               {health.investmentCoversOutflow ? (
-                <View style={styles.coverageSuccessContainer}>
+                <View style={styles.coverageMessageContainer}>
                   <Ionicons
                     name="checkmark-circle"
                     size={20}
@@ -101,11 +101,18 @@ export function HealthSummaryCard({
                   </Text>
                 </View>
               ) : (
-                <Text style={[styles.coverageText, { color: colors.warning }]}>
-                  ⚠ Seus investimentos cobrem{" "}
-                  {formatPercent(health.investmentCoveragePercent)} dos seus
-                  custos mensais
-                </Text>
+                <View style={styles.coverageMessageContainer}>
+                  <Ionicons
+                    name="warning"
+                    size={20}
+                    color={colors.warning}
+                  />
+                  <Text style={[styles.coverageText, { color: colors.warning }]}>
+                    Seus investimentos cobrem{" "}
+                    {formatPercent(health.investmentCoveragePercent)} dos seus
+                    custos mensais
+                  </Text>
+                </View>
               )}
             </View>
 
@@ -201,9 +208,8 @@ const styles = StyleSheet.create({
     padding: Spacing.sm,
     borderRadius: BorderRadius.md,
     backgroundColor: "rgba(255, 255, 255, 0.05)",
-    gap: Spacing.xs,
   },
-  coverageSuccessContainer: {
+  coverageMessageContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

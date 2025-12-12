@@ -1,44 +1,55 @@
-import React, { useEffect } from 'react';
 import { useReportsContext } from '@/contexts/ReportsContext';
 import { Snapshot } from '@/models/snapshot';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 /**
  * Hook to access and manage snapshots for a specific report
  */
 export function useSnapshots(reportId: string | null) {
-  const context = useReportsContext();
+  const { getSnapshots, loadSnapshots, createSnapshot, deleteSnapshot } = useReportsContext();
 
   useEffect(() => {
     if (reportId) {
-      context.loadSnapshots(reportId);
+      loadSnapshots(reportId);
     }
-  }, [reportId, context]);
+  }, [reportId, loadSnapshots]);
 
-  const snapshots = reportId ? context.getSnapshots(reportId) : [];
-
-  return {
-    snapshots,
-    createSnapshot: (notes?: string) => {
+  const memoizedCreateSnapshot = useCallback(
+    (notes?: string) => {
       if (!reportId) {
         throw new Error('reportId is required to create a snapshot');
       }
-      return context.createSnapshot(reportId, notes);
+      return createSnapshot(reportId, notes);
     },
-    deleteSnapshot: context.deleteSnapshot,
-    loadSnapshots: () => {
-      if (!reportId) {
-        throw new Error('reportId is required to load snapshots');
-      }
-      return context.loadSnapshots(reportId);
-    },
-  };
+    [reportId, createSnapshot]
+  );
+
+  const memoizedLoadSnapshots = useCallback(() => {
+    if (!reportId) {
+      throw new Error('reportId is required to load snapshots');
+    }
+    return loadSnapshots(reportId);
+  }, [reportId, loadSnapshots]);
+
+  const snapshots = useMemo(() => {
+    return reportId ? getSnapshots(reportId) : [];
+  }, [reportId, getSnapshots]);
+
+  return useMemo(
+    () => ({
+      snapshots,
+      createSnapshot: memoizedCreateSnapshot,
+      deleteSnapshot,
+      loadSnapshots: memoizedLoadSnapshots,
+    }),
+    [snapshots, memoizedCreateSnapshot, deleteSnapshot, memoizedLoadSnapshots]
+  );
 }
 
 /**
  * Hook to get a specific snapshot by ID
  */
 export function useSnapshot(snapshotId: string | null) {
-  const { getSnapshots } = useReportsContext();
   const [snapshot, setSnapshot] = React.useState<Snapshot | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
 
