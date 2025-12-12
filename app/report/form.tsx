@@ -37,86 +37,113 @@ export default function ReportFormScreen() {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
-  // Form state
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [startDate, setStartDate] = useState(new Date());
+  const [reportForm, setReportForm] = useState({
+    name: '',
+    description: '',
+    startDate: new Date(),
+    initialAmount: 0,
+    inflowItems: [] as InflowItem[],
+    outflowItems: [] as OutflowItem[],
+    annualRate: 8.5,
+    goalAmount: undefined as number | undefined,
+    simulationYears: 10,
+    highlightMonths: [] as HighlightMonth[],
+  });
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [initialAmount, setInitialAmount] = useState(0);
-  const [inflowItems, setInflowItems] = useState<InflowItem[]>([]);
-  const [outflowItems, setOutflowItems] = useState<OutflowItem[]>([]);
-  const [annualRate, setAnnualRate] = useState(8.5);
-  const [goalAmount, setGoalAmount] = useState<number | undefined>(undefined);
-  const [simulationYears, setSimulationYears] = useState(10);
-  const [highlightMonths, setHighlightMonths] = useState<HighlightMonth[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Helper to update form data
+  const updateFormData = <K extends keyof typeof reportForm>(
+    key: K,
+    value: typeof reportForm[K]
+  ) => {
+    setReportForm((prev) => ({ ...prev, [key]: value }));
+  };
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
-      setStartDate(selectedDate);
+      updateFormData('startDate', selectedDate);
     }
   };
 
   const addInflowItem = () => {
-    setInflowItems([...inflowItems, { id: generateId(), name: '', amount: 0 }]);
+    updateFormData('inflowItems', [
+      ...reportForm.inflowItems,
+      { id: generateId(), name: '', amount: 0 },
+    ]);
   };
 
   const removeInflowItem = (id: string) => {
-    setInflowItems(inflowItems.filter((item) => item.id !== id));
+    updateFormData(
+      'inflowItems',
+      reportForm.inflowItems.filter((item) => item.id !== id)
+    );
   };
 
   const updateInflowItem = (id: string, updates: Partial<InflowItem>) => {
-    setInflowItems(
-      inflowItems.map((item) => (item.id === id ? { ...item, ...updates } : item))
+    updateFormData(
+      'inflowItems',
+      reportForm.inflowItems.map((item) => (item.id === id ? { ...item, ...updates } : item))
     );
   };
 
   const addOutflowItem = () => {
-    setOutflowItems([...outflowItems, { id: generateId(), name: '', amount: 0 }]);
+    updateFormData('outflowItems', [
+      ...reportForm.outflowItems,
+      { id: generateId(), name: '', amount: 0 },
+    ]);
   };
 
   const removeOutflowItem = (id: string) => {
-    setOutflowItems(outflowItems.filter((item) => item.id !== id));
+    updateFormData(
+      'outflowItems',
+      reportForm.outflowItems.filter((item) => item.id !== id)
+    );
   };
 
   const updateOutflowItem = (id: string, updates: Partial<OutflowItem>) => {
-    setOutflowItems(
-      outflowItems.map((item) => (item.id === id ? { ...item, ...updates } : item))
+    updateFormData(
+      'outflowItems',
+      reportForm.outflowItems.map((item) => (item.id === id ? { ...item, ...updates } : item))
     );
   };
 
   const addHighlightMonth = () => {
-    setHighlightMonths([
-      ...highlightMonths,
+    updateFormData('highlightMonths', [
+      ...reportForm.highlightMonths,
       { id: generateId(), label: '', monthIndex: 0 },
     ]);
   };
 
   const removeHighlightMonth = (id: string) => {
-    setHighlightMonths(highlightMonths.filter((item) => item.id !== id));
+    updateFormData(
+      'highlightMonths',
+      reportForm.highlightMonths.filter((item) => item.id !== id)
+    );
   };
 
   const updateHighlightMonth = (id: string, updates: Partial<HighlightMonth>) => {
-    setHighlightMonths(
-      highlightMonths.map((item) => (item.id === id ? { ...item, ...updates } : item))
+    updateFormData(
+      'highlightMonths',
+      reportForm.highlightMonths.map((item) => (item.id === id ? { ...item, ...updates } : item))
     );
   };
 
   const validateForm = (): string | null => {
-    if (!name.trim()) {
+    if (!reportForm.name.trim()) {
       return 'Nome é obrigatório';
     }
-    if (inflowItems.length === 0) {
+    if (reportForm.inflowItems.length === 0) {
       return 'Adicione pelo menos uma entrada mensal';
     }
-    if (outflowItems.length === 0) {
+    if (reportForm.outflowItems.length === 0) {
       return 'Adicione pelo menos uma saída mensal';
     }
-    if (annualRate <= 0 || annualRate > 100) {
+    if (reportForm.annualRate <= 0 || reportForm.annualRate > 100) {
       return 'Taxa anual deve estar entre 0 e 100%';
     }
-    if (simulationYears <= 0 || simulationYears > 50) {
+    if (reportForm.simulationYears <= 0 || reportForm.simulationYears > 50) {
       return 'Duração da simulação deve estar entre 1 e 50 anos';
     }
     return null;
@@ -132,19 +159,19 @@ export default function ReportFormScreen() {
     setIsSaving(true);
     try {
       // Convert annual rate from percentage to decimal
-      const rateDecimal = annualRate / 100;
+      const rateDecimal = reportForm.annualRate / 100;
 
       await createReport({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        startDate: startDate.toISOString().split('T')[0],
-        initialAmount,
-        inflowItems: inflowItems.filter((item) => item.name.trim() && item.amount > 0),
-        outflowItems: outflowItems.filter((item) => item.name.trim() && item.amount > 0),
+        name: reportForm.name.trim(),
+        description: reportForm.description.trim() || undefined,
+        startDate: reportForm.startDate.toISOString().split('T')[0],
+        initialAmount: reportForm.initialAmount,
+        inflowItems: reportForm.inflowItems.filter((item) => item.name.trim() && item.amount > 0),
+        outflowItems: reportForm.outflowItems.filter((item) => item.name.trim() && item.amount > 0),
         annualRate: rateDecimal,
-        goalAmount: goalAmount && goalAmount > 0 ? goalAmount : undefined,
-        simulationYears,
-        highlightMonths: highlightMonths.filter(
+        goalAmount: reportForm.goalAmount && reportForm.goalAmount > 0 ? reportForm.goalAmount : undefined,
+        simulationYears: reportForm.simulationYears,
+        highlightMonths: reportForm.highlightMonths.filter(
           (item) => item.label.trim() && item.monthIndex >= 0
         ),
       });
@@ -171,14 +198,14 @@ export default function ReportFormScreen() {
         <SectionHeader title="Informações Básicas" icon="information-circle-outline" />
         <TextField
           label="Nome *"
-          value={name}
-          onChangeText={setName}
+          value={reportForm.name}
+          onChangeText={(text) => updateFormData('name', text)}
           placeholder="Ex: Aposentadoria, Vida Geral"
         />
         <TextField
           label="Descrição"
-          value={description}
-          onChangeText={setDescription}
+          value={reportForm.description}
+          onChangeText={(text) => updateFormData('description', text)}
           placeholder="Descrição opcional do relatório"
           multiline
         />
@@ -189,13 +216,13 @@ export default function ReportFormScreen() {
             onPress={() => setShowDatePicker(true)}
           >
             <Text style={[styles.dateText, { color: colors.text }]}>
-              {startDate.toLocaleDateString('pt-BR')}
+              {reportForm.startDate.toLocaleDateString('pt-BR')}
             </Text>
             <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
-              value={startDate}
+              value={reportForm.startDate}
               mode="date"
               display="default"
               onChange={handleDateChange}
@@ -204,8 +231,8 @@ export default function ReportFormScreen() {
         </View>
         <NumberField
           label="Valor inicial *"
-          value={initialAmount}
-          onChangeValue={setInitialAmount}
+          value={reportForm.initialAmount}
+          onChangeValue={(value) => updateFormData('initialAmount', value)}
           prefix="R$ "
           decimals={2}
         />
@@ -219,7 +246,7 @@ export default function ReportFormScreen() {
           actionLabel="+ Adicionar"
           onAction={addInflowItem}
         />
-        {inflowItems.map((item) => (
+        {reportForm.inflowItems.map((item) => (
           <View key={item.id} style={[styles.itemRow, { backgroundColor: colors.surface }]}>
             <View style={styles.itemContent}>
               <TextField
@@ -246,7 +273,7 @@ export default function ReportFormScreen() {
             </TouchableOpacity>
           </View>
         ))}
-        {inflowItems.length === 0 && (
+        {reportForm.inflowItems.length === 0 && (
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: colors.surfaceSecondary }]}
             onPress={addInflowItem}
@@ -267,7 +294,7 @@ export default function ReportFormScreen() {
           actionLabel="+ Adicionar"
           onAction={addOutflowItem}
         />
-        {outflowItems.map((item) => (
+        {reportForm.outflowItems.map((item) => (
           <View key={item.id} style={[styles.itemRow, { backgroundColor: colors.surface }]}>
             <View style={styles.itemContent}>
               <TextField
@@ -294,7 +321,7 @@ export default function ReportFormScreen() {
             </TouchableOpacity>
           </View>
         ))}
-        {outflowItems.length === 0 && (
+        {reportForm.outflowItems.length === 0 && (
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: colors.surfaceSecondary }]}
             onPress={addOutflowItem}
@@ -311,8 +338,8 @@ export default function ReportFormScreen() {
         <Tooltip text="Taxa de juros anual esperada do investimento. Exemplo: 8.5% ao ano para investimentos conservadores.">
           <NumberField
             label="Taxa anual de investimento (%)"
-            value={annualRate}
-            onChangeValue={setAnnualRate}
+            value={reportForm.annualRate}
+            onChangeValue={(value) => updateFormData('annualRate', value)}
             suffix="%"
             decimals={1}
           />
@@ -320,8 +347,8 @@ export default function ReportFormScreen() {
         <Tooltip text="Valor de patrimônio que você deseja atingir. O sistema calculará em quantos meses você alcançará essa meta.">
           <NumberField
             label="Meta de patrimônio (opcional)"
-            value={goalAmount || 0}
-            onChangeValue={(value) => setGoalAmount(value > 0 ? value : undefined)}
+            value={reportForm.goalAmount || 0}
+            onChangeValue={(value) => updateFormData('goalAmount', value > 0 ? value : undefined)}
             prefix="R$ "
             decimals={2}
           />
@@ -329,8 +356,8 @@ export default function ReportFormScreen() {
         <Tooltip text="Quantos anos você deseja simular a projeção financeira. Recomendado: 10-30 anos para planejamento de longo prazo.">
           <NumberField
             label="Duração da simulação (anos)"
-            value={simulationYears}
-            onChangeValue={setSimulationYears}
+            value={reportForm.simulationYears}
+            onChangeValue={(value) => updateFormData('simulationYears', value)}
             suffix=" anos"
             decimals={0}
           />
@@ -345,7 +372,7 @@ export default function ReportFormScreen() {
           actionLabel="+ Adicionar"
           onAction={addHighlightMonth}
         />
-        {highlightMonths.map((item) => (
+        {reportForm.highlightMonths.map((item) => (
           <View key={item.id} style={[styles.itemRow, { backgroundColor: colors.surface }]}>
             <View style={styles.itemContent}>
               <TextField
@@ -373,7 +400,7 @@ export default function ReportFormScreen() {
             </TouchableOpacity>
           </View>
         ))}
-        {highlightMonths.length === 0 && (
+        {reportForm.highlightMonths.length === 0 && (
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: colors.surfaceSecondary }]}
             onPress={addHighlightMonth}
