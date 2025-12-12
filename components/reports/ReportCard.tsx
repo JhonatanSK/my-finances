@@ -40,6 +40,20 @@ export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCard
     }
   };
 
+  const handleDelete = (e: any) => {
+    e?.stopPropagation();
+    if (onDelete) {
+      onDelete();
+    }
+  };
+
+  const handleDuplicate = (e: any) => {
+    e?.stopPropagation();
+    if (onDuplicate) {
+      onDuplicate();
+    }
+  };
+
   return (
     <Animated.View entering={FadeInDown.duration(300)} exiting={FadeOutUp.duration(200)}>
       <Pressable
@@ -62,13 +76,33 @@ export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCard
               </Text>
             )}
           </View>
-          <TouchableOpacity
-            onPress={handleEdit}
-            style={styles.editButton}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="create-outline" size={20} color={colors.textSecondary} />
-          </TouchableOpacity>
+          <View style={styles.actionsContainer}>
+            {onDuplicate && (
+              <TouchableOpacity
+                onPress={handleDuplicate}
+                style={styles.actionButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="copy-outline" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              onPress={handleEdit}
+              style={styles.actionButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="create-outline" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+            {onDelete && (
+              <TouchableOpacity
+                onPress={handleDelete}
+                style={styles.actionButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="trash-outline" size={20} color={colors.negative} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         <View style={styles.infoRow}>
@@ -139,7 +173,12 @@ const styles = StyleSheet.create({
   description: {
     ...Typography.bodySmall,
   },
-  editButton: {
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  actionButton: {
     padding: Spacing.xs,
   },
   infoRow: {

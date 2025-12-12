@@ -10,6 +10,7 @@ import { useReports } from '@/hooks/useReports';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import {
+  Alert,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -20,12 +21,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ReportsListScreen() {
   const router = useRouter();
-  const { reports, isLoading, loadReports } = useReports();
+  const { reports, isLoading, loadReports, deleteReport, duplicateReport } = useReports();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
   useEffect(() => {
     loadReports();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreateReport = () => {
@@ -34,6 +36,37 @@ export default function ReportsListScreen() {
 
   const handleRefresh = () => {
     loadReports();
+  };
+
+  const handleDelete = (reportId: string) => {
+    Alert.alert(
+      'Confirmar exclusão',
+      'Tem certeza que deseja excluir este relatório? Esta ação não pode ser desfeita.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteReport(reportId);
+            } catch (error) {
+              console.error('Error deleting report:', error);
+              Alert.alert('Erro', 'Não foi possível excluir o relatório');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDuplicate = async (reportId: string) => {
+    try {
+      await duplicateReport(reportId);
+    } catch (error) {
+      console.error('Error duplicating report:', error);
+      Alert.alert('Erro', 'Não foi possível duplicar o relatório');
+    }
   };
 
   const renderEmptyState = () => (
@@ -63,7 +96,13 @@ export default function ReportsListScreen() {
       <FlatList
         data={reports}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ReportCard report={item} />}
+        renderItem={({ item }) => (
+          <ReportCard
+            report={item}
+            onDelete={() => handleDelete(item.id)}
+            onDuplicate={() => handleDuplicate(item.id)}
+          />
+        )}
         contentContainerStyle={[
           styles.listContent,
           reports.length === 0 && styles.listContentEmpty,
