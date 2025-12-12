@@ -1,16 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
-import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
-import { Spacing, BorderRadius } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useReports } from '@/hooks/useReports';
 import { Report } from '@/models/report';
-import { formatCurrency } from '@/utils/format';
 import { formatMonthYear } from '@/utils/date';
-import { findGoalHit, generateProjections } from '@/services/calculations/projections';
+import { formatCurrency } from '@/utils/format';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
 
 interface ReportCardProps {
   report: Report;
@@ -23,9 +23,9 @@ export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCard
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const { getGoalHit } = useReports();
 
-  const projections = generateProjections(report);
-  const goalHit = findGoalHit(projections, report.goalAmount);
+  const goalHit = getGoalHit(report.id);
 
   const handlePress = () => {
     router.push(`/report/${report.id}`);
@@ -38,11 +38,6 @@ export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCard
     } else {
       router.push(`/report/${report.id}/edit`);
     }
-  };
-
-  const handleMenuPress = (e: any) => {
-    e?.stopPropagation();
-    // Menu actions would go here - for now just show options
   };
 
   return (

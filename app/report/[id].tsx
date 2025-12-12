@@ -14,7 +14,6 @@ import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReport } from '@/hooks/useReports';
 import { useSnapshots } from '@/hooks/useSnapshots';
-import { calculateHealthSummary } from '@/services/calculations/health';
 import { formatDate, formatMonthYear } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,7 +35,7 @@ export const options = {
 export default function ReportDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { report, projections, goalHit, updateReport } = useReport(id || null);
+  const { report, projections, goalHit, health, updateReport } = useReport(id || null);
   const { snapshots, createSnapshot, loadSnapshots } = useSnapshots(id || null);
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
@@ -78,7 +77,13 @@ export default function ReportDetailScreen() {
     );
   }
 
-  const health = calculateHealthSummary(report, projections);
+  if (!health) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'bottom']}>
+        <LoadingState message="Carregando relatório..." />
+      </SafeAreaView>
+    );
+  }
 
   const handleUpdateInitialAmount = async () => {
     if (tempInitialAmount === report.initialAmount) return;

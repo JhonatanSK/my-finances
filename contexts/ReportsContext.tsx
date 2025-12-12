@@ -1,6 +1,7 @@
 import { MonthlyProjection } from '@/models/projections';
 import { Report } from '@/models/report';
 import { Snapshot } from '@/models/snapshot';
+import { calculateHealthSummary, HealthSummary } from '@/services/calculations/health';
 import { findGoalHit, generateProjections, getHighlightedMonthValues } from '@/services/calculations/projections';
 import { localStorageService } from '@/services/storage/LocalStorageService';
 import { getCurrentDateTime } from '@/utils/date';
@@ -23,6 +24,7 @@ interface ReportsContextValue {
   // Projections
   getProjections: (reportId: string) => MonthlyProjection[];
   getGoalHit: (reportId: string) => { goalHitIndex: number | null; goalHitDate: string | null };
+  getHealthSummary: (reportId: string) => HealthSummary | null;
   
   // Snapshots state
   getSnapshots: (reportId: string) => Snapshot[];
@@ -139,6 +141,13 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
     return findGoalHit(projections, report.goalAmount);
   };
 
+  const getHealthSummary = (reportId: string): HealthSummary | null => {
+    const report = getReport(reportId);
+    if (!report) return null;
+    const projections = getProjections(reportId);
+    return calculateHealthSummary(report, projections);
+  };
+
   const getSnapshots = (reportId: string): Snapshot[] => {
     return snapshots.get(reportId) ?? [];
   };
@@ -225,6 +234,7 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
     duplicateReport,
     getProjections,
     getGoalHit,
+    getHealthSummary,
     getSnapshots,
     loadSnapshots,
     createSnapshot,

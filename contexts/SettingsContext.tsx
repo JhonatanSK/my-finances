@@ -1,3 +1,4 @@
+import { defaultEntitlements, UserEntitlements } from '@/models/entitlements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useColorScheme as useSystemColorScheme } from 'react-native';
@@ -10,12 +11,18 @@ interface Settings {
   theme: ThemeMode;
   currency: string;
   numberFormat: 'pt-BR' | 'en-US';
+  // Language support (future)
+  language?: string;
+  // Feature flags / Entitlements
+  entitlements: UserEntitlements;
 }
 
 interface SettingsContextValue {
   settings: Settings;
   themeMode: 'light' | 'dark';
+  entitlements: UserEntitlements;
   updateSettings: (updates: Partial<Settings>) => Promise<void>;
+  updateEntitlements: (updates: Partial<UserEntitlements>) => Promise<void>;
   exportBackup: () => Promise<string>;
   importBackup: (jsonData: string) => Promise<void>;
 }
@@ -24,6 +31,7 @@ const defaultSettings: Settings = {
   theme: 'dark',
   currency: 'BRL',
   numberFormat: 'pt-BR',
+  entitlements: defaultEntitlements,
 };
 
 export const SettingsContext = createContext<SettingsContextValue | undefined>(undefined);
@@ -45,7 +53,15 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       const stored = await AsyncStorage.getItem(SETTINGS_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        setSettings({ ...defaultSettings, ...parsed });
+        // Ensure entitlements are always present with defaults
+        setSettings({
+          ...defaultSettings,
+          ...parsed,
+          entitlements: {
+            ...defaultEntitlements,
+            ...(parsed.entitlements || {}),
+          },
+        });
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -60,6 +76,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } catch (error) {
       console.error('Error saving settings:', error);
     }
+  };
+
+  const updateEntitlements = async (updates: Partial<UserEntitlements>) => {
+    const newEntitlements = { ...settings.entitlements, ...updates };
+    await updateSettings({ entitlements: newEntitlements });
   };
 
   const themeMode: 'light' | 'dark' =
@@ -96,7 +117,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const value: SettingsContextValue = {
     settings,
     themeMode,
+    entitlements: settings.entitlements,
     updateSettings,
+    updateEntitlements,
     exportBackup,
     importBackup,
   };

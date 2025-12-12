@@ -1,6 +1,5 @@
 import { useReportsContext } from '@/contexts/ReportsContext';
 import { Report } from '@/models/report';
-import { MonthlyProjection } from '@/models/projections';
 import { useEffect } from 'react';
 
 /**
@@ -35,6 +34,7 @@ export function useReports() {
     // Projections
     getProjections: context.getProjections,
     getGoalHit: context.getGoalHit,
+    getHealthSummary: context.getHealthSummary,
   };
 }
 
@@ -42,7 +42,7 @@ export function useReports() {
  * Hook to get a specific report by ID
  */
 export function useReport(reportId: string | null) {
-  const { getReport, getProjections, getGoalHit, loadSnapshots, updateReport } = useReportsContext();
+  const { getReport, getProjections, getGoalHit, getHealthSummary, loadSnapshots, updateReport } = useReportsContext();
 
   useEffect(() => {
     if (reportId) {
@@ -55,6 +55,7 @@ export function useReport(reportId: string | null) {
       report: null,
       projections: [],
       goalHit: { goalHitIndex: null, goalHitDate: null },
+      health: null,
       updateReport: async () => {},
     };
   }
@@ -62,11 +63,13 @@ export function useReport(reportId: string | null) {
   const report = getReport(reportId);
   const projections = report ? getProjections(reportId) : [];
   const goalHit = report ? getGoalHit(reportId) : { goalHitIndex: null, goalHitDate: null };
+  const health = report ? getHealthSummary(reportId) : null;
 
   return {
     report,
     projections,
     goalHit,
+    health,
     updateReport: (updates: Partial<Report>) => updateReport(reportId, updates),
   };
 }
