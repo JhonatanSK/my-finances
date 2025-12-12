@@ -30,8 +30,18 @@ export function calculateHealthSummary(report: Report): HealthSummary {
   }
 
   const monthlyRate = report.annualRate / 12;
-  const monthlyYieldEstimate = monthlyLeftover * monthlyRate;
-  const monthlyLeftoverWithInvest = monthlyLeftover + monthlyYieldEstimate;
+  
+  // Rendimento sobre o patrimônio já investido (valor inicial)
+  const yieldOnInitialAmount = report.initialAmount * monthlyRate;
+  
+  // Rendimento sobre o que sobra mensalmente (assumindo que é investido)
+  const yieldOnLeftover = monthlyLeftover * monthlyRate;
+  
+  // Rendimento total = rendimento do patrimônio + rendimento do que sobra
+  const totalMonthlyYield = yieldOnInitialAmount + yieldOnLeftover;
+  
+  // O que sobra + rendimento total (do patrimônio + do que sobra)
+  const monthlyLeftoverWithInvest = monthlyLeftover + totalMonthlyYield;
 
   let percentOutflowWithInvest: number | null = null;
   let percentKeptWithInvest: number | null = null;

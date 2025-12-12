@@ -1,0 +1,179 @@
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
+import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { Colors } from '@/constants/theme';
+import { Spacing, BorderRadius } from '@/constants/spacing';
+import { Typography } from '@/constants/typography';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Report } from '@/models/report';
+import { formatCurrency } from '@/utils/format';
+import { formatMonthYear } from '@/utils/date';
+import { findGoalHit, generateProjections } from '@/services/calculations/projections';
+
+interface ReportCardProps {
+  report: Report;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onDuplicate?: () => void;
+}
+
+export function ReportCard({ report, onEdit, onDelete, onDuplicate }: ReportCardProps) {
+  const router = useRouter();
+  const colorScheme = useColorScheme() ?? 'dark';
+  const colors = Colors[colorScheme];
+
+  const projections = generateProjections(report);
+  const goalHit = findGoalHit(projections, report.goalAmount);
+
+  const handlePress = () => {
+    router.push(`/report/${report.id}`);
+  };
+
+  const handleEdit = (e: any) => {
+    e?.stopPropagation();
+    if (onEdit) {
+      onEdit();
+    } else {
+      router.push(`/report/${report.id}/edit`);
+    }
+  };
+
+  const handleMenuPress = (e: any) => {
+    e?.stopPropagation();
+    // Menu actions would go here - for now just show options
+  };
+
+  return (
+    <Animated.View entering={FadeInDown.duration(300)} exiting={FadeOutUp.duration(200)}>
+      <Pressable
+        style={[styles.container, { backgroundColor: colors.surface }]}
+        onPress={handlePress}
+        android_ripple={{ color: colors.surfaceSecondary }}
+      >
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+              {report.name}
+            </Text>
+            {report.description && (
+              <Text
+                style={[styles.description, { color: colors.textSecondary }]}
+                numberOfLines={1}
+              >
+                {report.description}
+              </Text>
+            )}
+          </View>
+          <TouchableOpacity
+            onPress={handleEdit}
+            style={styles.editButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="create-outline" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.infoRow}>
+          {report.goalAmount ? (
+            <View style={styles.infoItem}>
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Meta:</Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
+                {formatCurrency(report.goalAmount)}
+              </Text>
+            </View>
+          ) : null}
+          <View style={styles.infoItem}>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+              Valor inicial:
+            </Text>
+            <Text style={[styles.infoValue, { color: colors.text }]}>
+              {formatCurrency(report.initialAmount)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.statusRow}>
+          {goalHit.goalHitDate ? (
+            <View style={styles.statusBadge}>
+              <Ionicons name="checkmark-circle" size={16} color={colors.goalHit} />
+              <Text style={[styles.statusText, { color: colors.goalHit }]}>
+                Atinge em {formatMonthYear(goalHit.goalHitDate)}
+              </Text>
+            </View>
+          ) : report.goalAmount ? (
+            <View style={styles.statusBadge}>
+              <Ionicons name="time-outline" size={16} color={colors.warning} />
+              <Text style={[styles.statusText, { color: colors.warning }]}>
+                Meta não atingida
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+    </Pressable>
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.md,
+    overflow: 'hidden',
+  },
+  content: {
+    padding: Spacing.md,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.sm,
+  },
+  titleContainer: {
+    flex: 1,
+    marginRight: Spacing.sm,
+  },
+  title: {
+    ...Typography.h4,
+    marginBottom: 2,
+  },
+  description: {
+    ...Typography.bodySmall,
+  },
+  editButton: {
+    padding: Spacing.xs,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  infoLabel: {
+    ...Typography.labelSmall,
+  },
+  infoValue: {
+    ...Typography.number,
+  },
+  statusRow: {
+    marginTop: Spacing.xs,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  statusText: {
+    ...Typography.labelSmall,
+  },
+});
+

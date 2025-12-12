@@ -1,5 +1,5 @@
-import { Report } from '@/models/report';
 import { MonthlyProjection } from '@/models/projections';
+import { Report } from '@/models/report';
 import { addMonths } from '@/utils/date';
 
 export interface GoalHitResult {
@@ -28,8 +28,15 @@ export function generateProjections(report: Report): MonthlyProjection[] {
     const inflow = monthlyInflow;
     const outflow = monthlyOutflow;
 
+    // Valor após entradas e saídas do mês
     const totalBeforeYield = totalPrevious + inflow - outflow;
-    const yieldAmount = totalPrevious * monthlyRate;
+    
+    // Rendimento calculado sobre o valor investido (após entradas/saídas)
+    // Isso representa juros compostos: o rendimento do mês atual é calculado
+    // sobre o patrimônio que está investido (valor anterior + movimentações)
+    const yieldAmount = totalBeforeYield * monthlyRate;
+    
+    // Valor final do mês = valor após movimentações + rendimento
     const finalAmount = totalBeforeYield + yieldAmount;
 
     const markers: string[] = [];
@@ -97,7 +104,7 @@ export function getFinalAmount(projections: MonthlyProjection[]): number {
 export function getHighlightedMonthValues(
   projections: MonthlyProjection[],
   highlightMonths: Report['highlightMonths']
-): Array<{ label: string; date: string; amount: number }> {
+): { label: string; date: string; amount: number }[] {
   return highlightMonths
     .map((highlight) => {
       const projection = projections.find((p) => p.monthIndex === highlight.monthIndex);
