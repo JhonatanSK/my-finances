@@ -1,12 +1,12 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { VictoryChart, VictoryLine, VictoryAxis, VictoryLegend } from 'victory-native';
+import { BorderRadius, Spacing } from '@/constants/spacing';
 import { Colors } from '@/constants/theme';
-import { Spacing, BorderRadius } from '@/constants/spacing';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { MonthlyProjection } from '@/models/projections';
 import { formatCurrency } from '@/utils/format';
+import React, { useMemo } from 'react';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import Svg, { G, Path, Line as SvgLine, Text as SvgText } from 'react-native-svg';
 
 interface ProjectionCompareChartProps {
   projectionsA: MonthlyProjection[];
@@ -28,6 +28,8 @@ export function ProjectionCompareChart({
 }: ProjectionCompareChartProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const screenWidth = Dimensions.get('window').width;
+  const chartWidth = screenWidth - Spacing.lg * 2 - CHART_PADDING.left - CHART_PADDING.right;
 
   // Prepare data for both lines
   const chartDataA = useMemo(() => {
@@ -45,20 +47,38 @@ export function ProjectionCompareChart({
   }, [projectionsB]);
 
   // Get min and max values for domain
-  const yDomain = useMemo(() => {
+  const { yMin, yMax, xMax } = useMemo(() => {
     const allValues = [
       ...chartDataA.map((d) => d.y),
       ...chartDataB.map((d) => d.y),
     ];
-    if (allValues.length === 0) return [0, 1000];
+    if (allValues.length === 0) return { yMin: 0, yMax: 1000, xMax: 0 };
     const min = Math.min(...allValues, 0);
     const max = Math.max(...allValues);
     const padding = (max - min) * 0.1;
-    return [Math.max(0, min - padding), max + padding];
-  }, [chartDataA, chartDataB]);
+    const maxLength = Math.max(projectionsA.length, projectionsB.length);
+    return {
+      yMin: Math.max(0, min - padding),
+      yMax: max + padding,
+      xMax: maxLength - 1,
+    };
+  }, [chartDataA, chartDataB, projectionsA.length, projectionsB.length]);
 
-  // Get max length for x domain
-  const maxLength = Math.max(projectionsA.length, projectionsB.length);
+  // Scale functions
+  const scaleX = useMemo(() => {
+    return (x: number) => {
+      if (xMax === 0) return 0;
+      return (x / xMax) * chartWidth;
+    };
+  }, [xMax, chartWidth]);
+
+  const scaleY = useMemo(() => {
+    const range = yMax - yMin;
+    return (y: number) => {
+      if (range === 0) return height - CHART_PADDING.bottom;
+      return height - CHART_PADDING.bottom - ((y - yMin) / range) * (height - CHART_PADDING.top - CHART_PADDING.bottom);
+    };
+  }, [yMin, yMax, height]);
 
   // Format Y axis tick values
   const formatYAxis = (tick: number) => {
@@ -71,14 +91,34 @@ export function ProjectionCompareChart({
     return `R$ ${tick.toFixed(0)}`;
   };
 
-  // Format X axis tick values
-  const formatXAxis = (tick: number) => {
-    // Show year for cleaner labels
-    const projection = projectionsA[tick] || projectionsB[tick];
-    if (!projection) return '';
-    const date = new Date(projection.date);
-    return date.getFullYear().toString();
-  };
+  // Generate paths for both lines
+  const pathDataA = useMemo(() => {
+    if (chartDataA.length === 0 || xMax === 0) return '';
+    const points = chartDataA.map((d) => `${scaleX(d.x)},${scaleY(d.y)}`);
+    return `M ${points.join(' L ')}`;
+  }, [chartDataA, scaleX, scaleY, xMax]);
+
+  const pathDataB = useMemo(() => {
+    if (chartDataB.length === 0 || xMax === 0) return '';
+    const points = chartDataB.map((d) => `${scaleX(d.x)},${scaleY(d.y)}`);
+    return `M ${points.join(' L ')}`;
+  }, [chartDataB, scaleX, scaleY, xMax]);
+
+  // Generate Y axis ticks
+  const yTicks = useMemo(() => {
+    const ticks = [];
+    const tickCount = 5;
+    const range = yMax - yMin;
+    const scaleYFunc = (y: number) => {
+      if (range === 0) return height - CHART_PADDING.bottom;
+      return height - CHART_PADDING.bottom - ((y - yMin) / range) * (height - CHART_PADDING.top - CHART_PADDING.bottom);
+    };
+    for (let i = 0; i <= tickCount; i++) {
+      const value = yMin + (yMax - yMin) * (i / tickCount);
+      ticks.push({ value, y: scaleYFunc(value) });
+    }
+    return ticks;
+  }, [yMin, yMax, height]);
 
   if (projectionsA.length === 0 && projectionsB.length === 0) {
     return (
@@ -92,69 +132,86 @@ export function ProjectionCompareChart({
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      <VictoryChart
+      <Svg
+        width={chartWidth + CHART_PADDING.left + CHART_PADDING.right}
         height={height}
-        padding={CHART_PADDING}
-        domain={{ y: yDomain, x: [0, maxLength - 1] }}
-        theme={{
-          axis: {
-            style: {
-              axis: { stroke: colors.border },
-              tickLabels: { fill: colors.textSecondary, ...Typography.caption },
-              grid: { stroke: colors.border, strokeDasharray: '4,4' },
-            },
-          },
-        }}
+        style={styles.chart}
       >
-        {/* Line A */}
-        {chartDataA.length > 0 && (
-          <VictoryLine
-            data={chartDataA}
-            style={{
-              data: {
-                stroke: colors.tint,
-                strokeWidth: 3,
-              },
-            }}
-            interpolation="monotoneX"
+        <G x={CHART_PADDING.left} y={CHART_PADDING.top}>
+          {/* Grid lines */}
+          {yTicks.map((tick, index) => (
+            <SvgLine
+              key={index}
+              x1={0}
+              y1={tick.y - CHART_PADDING.top}
+              x2={chartWidth}
+              y2={tick.y - CHART_PADDING.top}
+              stroke={colors.border}
+              strokeWidth={1}
+              strokeDasharray="4,4"
+              opacity={0.3}
+            />
+          ))}
+
+          {/* Line A */}
+          {pathDataA && (
+            <Path
+              d={pathDataA}
+              fill="none"
+              stroke={colors.tint}
+              strokeWidth={3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+
+          {/* Line B */}
+          {pathDataB && (
+            <Path
+              d={pathDataB}
+              fill="none"
+              stroke={colors.highlight}
+              strokeWidth={3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          )}
+
+          {/* Y Axis labels */}
+          {yTicks.map((tick, index) => (
+            <SvgText
+              key={index}
+              x={-10}
+              y={tick.y - CHART_PADDING.top + 4}
+              fill={colors.textSecondary}
+              fontSize={10}
+              textAnchor="end"
+            >
+              {formatYAxis(tick.value)}
+            </SvgText>
+          ))}
+
+          {/* Y Axis line */}
+          <SvgLine
+            x1={0}
+            y1={0}
+            x2={0}
+            y2={height - CHART_PADDING.top - CHART_PADDING.bottom}
+            stroke={colors.border}
+            strokeWidth={1}
           />
-        )}
 
-        {/* Line B */}
-        {chartDataB.length > 0 && (
-          <VictoryLine
-            data={chartDataB}
-            style={{
-              data: {
-                stroke: colors.highlight,
-                strokeWidth: 3,
-              },
-            }}
-            interpolation="monotoneX"
+          {/* X Axis line */}
+          <SvgLine
+            x1={0}
+            y1={height - CHART_PADDING.top - CHART_PADDING.bottom}
+            x2={chartWidth}
+            y2={height - CHART_PADDING.top - CHART_PADDING.bottom}
+            stroke={colors.border}
+            strokeWidth={1}
           />
-        )}
-
-        {/* Y Axis */}
-        <VictoryAxis
-          dependentAxis
-          tickFormat={formatYAxis}
-          style={{
-            tickLabels: { fill: colors.textSecondary, ...Typography.caption },
-            axis: { stroke: colors.border },
-            grid: { stroke: colors.border, strokeDasharray: '4,4' },
-          }}
-        />
-
-        {/* X Axis */}
-        <VictoryAxis
-          tickFormat={formatXAxis}
-          tickCount={Math.min(6, Math.ceil(maxLength / 12))}
-          style={{
-            tickLabels: { fill: colors.textSecondary, ...Typography.caption },
-            axis: { stroke: colors.border },
-          }}
-        />
-      </VictoryChart>
+        </G>
+      </Svg>
 
       {/* Legend */}
       <View style={styles.legend}>
@@ -204,6 +261,9 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.md,
+  },
+  chart: {
+    marginBottom: Spacing.sm,
   },
   emptyText: {
     ...Typography.body,

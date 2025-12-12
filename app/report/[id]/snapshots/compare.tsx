@@ -7,17 +7,17 @@ import { Colors } from '@/constants/theme';
 import { Typography } from '@/constants/typography';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
-import { useSnapshot, useSnapshots } from '@/hooks/useSnapshots';
+import { useSnapshot } from '@/hooks/useSnapshots';
 import { formatDate, formatMonthYear } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-    ActivityIndicator,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -33,7 +33,6 @@ export default function SnapshotsCompareScreen() {
     snapshotIdB?: string;
   }>();
   const { getReport, getProjections } = useReports();
-  const { snapshots } = useSnapshots(id || null);
   const { snapshot: snapshotA, isLoading: isLoadingA } = useSnapshot(
     snapshotIdA || null
   );
@@ -330,7 +329,7 @@ const styles = StyleSheet.create({
     ...Typography.label,
   },
   differenceValue: {
-    ...Typography.numberLarge,
+    ...Typography.number,
   },
   chartPlaceholder: {
     padding: Spacing.xl,

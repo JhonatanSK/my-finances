@@ -11,10 +11,10 @@ import { useSnapshots } from '@/hooks/useSnapshots';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    StyleSheet,
-    View
+  Alert,
+  FlatList,
+  StyleSheet,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 

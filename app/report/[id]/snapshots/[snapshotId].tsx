@@ -1,5 +1,5 @@
+import { ProjectionAccordion } from '@/components/reports/ProjectionAccordion';
 import { ProjectionChart } from '@/components/reports/ProjectionChart';
-import { ProjectionTable } from '@/components/reports/ProjectionTable';
 import { CustomHeader } from '@/components/ui/CustomHeader';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -177,7 +177,7 @@ export default function SnapshotDetailScreen() {
         {snapshot.projections && snapshot.projections.length > 0 && (
           <>
             <SectionHeader title="Projeção Mês a Mês" icon="calendar-outline" />
-            <ProjectionTable projections={snapshot.projections} />
+            <ProjectionAccordion projections={snapshot.projections} />
           </>
         )}
 
