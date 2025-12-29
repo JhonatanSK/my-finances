@@ -1,119 +1,119 @@
 # Clarus 📊
 
-> Aplicativo mobile de planejamento financeiro pessoal com projeções de longo prazo, análise de saúde financeira e comparação de cenários.
+> Mobile application for personal financial planning with long-term projections, financial health analysis, and scenario comparison.
 
 [![Expo](https://img.shields.io/badge/Expo-54.0-black?style=flat&logo=expo)](https://expo.dev)
 [![React Native](https://img.shields.io/badge/React%20Native-0.81.5-61DAFB?style=flat&logo=react)](https://reactnative.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat&logo=typescript)](https://www.typescriptlang.org)
 
-## 📱 Sobre o Projeto
+## 📱 About the Project
 
-**Clarus** é um aplicativo mobile desenvolvido com React Native e Expo que permite criar relatórios financeiros pessoais, projetar o crescimento patrimonial ao longo do tempo e analisar diferentes cenários de investimento.
+**Clarus** is a mobile application developed with React Native and Expo that allows you to create personal financial reports, project asset growth over time, and analyze different investment scenarios.
 
-### Características Principais
+### Key Features
 
-- ✅ **100% Offline**: Funciona completamente sem conexão à internet
-- 📈 **Projeções Financeiras**: Cálculo automático de crescimento patrimonial mês a mês
-- 🎯 **Metas de Patrimônio**: Definição e acompanhamento de metas financeiras
-- 📊 **Análise de Saúde Financeira**: Métricas detalhadas sobre entradas, saídas e investimentos
-- 📸 **Snapshots**: Captura de "visões" do relatório para comparação de cenários
-- 🎨 **Interface Moderna**: UI/UX cuidadosamente projetada com tema dark/light
-- 💾 **Armazenamento Local**: Dados salvos localmente no dispositivo
+- ✅ **100% Offline**: Works completely without internet connection
+- 📈 **Financial Projections**: Automatic calculation of month-to-month asset growth
+- 🎯 **Asset Goals**: Definition and tracking of financial goals
+- 📊 **Financial Health Analysis**: Detailed metrics on income, expenses, and investments
+- 📸 **Snapshots**: Capture "views" of the report for scenario comparison
+- 🎨 **Modern Interface**: Carefully designed UI/UX with dark/light theme
+- 💾 **Local Storage**: Data saved locally on the device
 
-## 🚀 Funcionalidades
+## 🚀 Features
 
-### Relatórios Financeiros
+### Financial Reports
 
-- Criação e edição de relatórios personalizados
-- Definição de entradas e saídas mensais
-- Configuração de taxa de investimento anual
-- Estabelecimento de metas de patrimônio
-- Destaque de meses específicos para análise
+- Create and edit custom reports
+- Define monthly income and expenses
+- Configure annual investment rate
+- Set asset goals
+- Highlight specific months for analysis
 
-### Projeções e Análises
+### Projections and Analysis
 
-- **Projeção Mês a Mês**: Visualização detalhada do crescimento patrimonial
-- **Gráficos Interativos**: Visualização gráfica das projeções com linha de meta
-- **Saúde Financeira**: Análise de:
-  - Entradas vs. Saídas mensais
-  - Percentual mantido do orçamento
-  - Retorno de investimento vs. custos
-  - Previsão de quando o retorno cobrirá todos os custos
-  - Projeção considerando investimentos
+- **Month-to-Month Projection**: Detailed visualization of asset growth
+- **Interactive Charts**: Graphical visualization of projections with goal line
+- **Financial Health**: Analysis of:
+  - Monthly Income vs. Expenses
+  - Percentage of budget maintained
+  - Investment return vs. costs
+  - Forecast of when returns will cover all costs
+  - Projection considering investments
 
-### Snapshots e Comparações
+### Snapshots and Comparisons
 
-- Captura de "visões" do relatório em momentos específicos
-- Comparação entre diferentes snapshots
-- Comparação de snapshot com a visão atual
-- Análise de diferenças entre cenários
+- Capture "views" of the report at specific moments
+- Comparison between different snapshots
+- Comparison of snapshot with current view
+- Analysis of differences between scenarios
 
-### Interface e UX
+### Interface and UX
 
-- **Navegação por Tabs**: Acesso rápido a relatórios e configurações
-- **Headers Customizados**: Navegação consistente em todas as telas
-- **Componentes Reutilizáveis**: UI padronizada e consistente
-- **Animações Suaves**: Transições e feedbacks visuais
-- **Safe Area**: Respeita áreas seguras do dispositivo
+- **Tab Navigation**: Quick access to reports and settings
+- **Custom Headers**: Consistent navigation across all screens
+- **Reusable Components**: Standardized and consistent UI
+- **Smooth Animations**: Transitions and visual feedback
+- **Safe Area**: Respects device safe areas
 
-## 🛠️ Tecnologias
+## 🛠️ Technologies
 
 ### Core
 
-- **[Expo](https://expo.dev)** (~54.0) - Framework e ferramentas
-- **[React Native](https://reactnative.dev)** (0.81.5) - Framework mobile
-- **[TypeScript](https://www.typescriptlang.org)** (5.9) - Tipagem estática
-- **[Expo Router](https://docs.expo.dev/router/introduction/)** (6.0) - Roteamento baseado em arquivos
+- **[Expo](https://expo.dev)** (~54.0) - Framework and tools
+- **[React Native](https://reactnative.dev)** (0.81.5) - Mobile framework
+- **[TypeScript](https://www.typescriptlang.org)** (5.9) - Static typing
+- **[Expo Router](https://docs.expo.dev/router/introduction/)** (6.0) - File-based routing
 
-### Estado e Dados
+### State and Data
 
-- **React Context API** - Gerenciamento de estado global
-- **AsyncStorage** - Persistência local de dados
-- **Custom Hooks** - Lógica reutilizável
+- **React Context API** - Global state management
+- **AsyncStorage** - Local data persistence
+- **Custom Hooks** - Reusable logic
 
-### UI e Estilo
+### UI and Styling
 
-- **React Native Reanimated** - Animações performáticas
-- **React Native SVG** - Gráficos e visualizações
-- **Expo Vector Icons** - Ícones
-- **Safe Area Context** - Gerenciamento de áreas seguras
+- **React Native Reanimated** - Performant animations
+- **React Native SVG** - Charts and visualizations
+- **Expo Vector Icons** - Icons
+- **Safe Area Context** - Safe area management
 
-### Utilitários
+### Utilities
 
-- **UUID** - Geração de IDs únicos
-- **DateTimePicker** - Seleção de datas
+- **UUID** - Unique ID generation
+- **DateTimePicker** - Date selection
 
-## 📁 Estrutura do Projeto
+## 📁 Project Structure
 
 ```
 my-finances/
-├── app/                    # Rotas e telas (Expo Router)
-│   ├── (tabs)/            # Navegação por tabs
-│   └── report/            # Telas de relatórios
-├── components/            # Componentes React
-│   ├── ui/                # Componentes genéricos
-│   ├── reports/           # Componentes de relatórios
-│   └── snapshots/          # Componentes de snapshots
+├── app/                    # Routes and screens (Expo Router)
+│   ├── (tabs)/            # Tab navigation
+│   └── report/            # Report screens
+├── components/            # React components
+│   ├── ui/                # Generic components
+│   ├── reports/           # Report components
+│   └── snapshots/          # Snapshot components
 ├── contexts/              # React Contexts
-│   ├── ReportsContext.tsx # Estado de relatórios
-│   └── SettingsContext.tsx # Configurações e flags
+│   ├── ReportsContext.tsx # Report state
+│   └── SettingsContext.tsx # Settings and flags
 ├── hooks/                 # Custom Hooks
-├── services/              # Lógica de negócio
-│   ├── calculations/      # Cálculos financeiros
-│   └── storage/           # Persistência de dados
-├── models/                # Tipos TypeScript
-├── utils/                 # Funções utilitárias
-├── constants/            # Constantes (cores, espaçamento, tipografia)
-└── docs/                  # Documentação
-    ├── ARCHITECTURE.md    # Arquitetura detalhada
-    └── next-steps/        # Roadmap futuro
+├── services/              # Business logic
+│   ├── calculations/      # Financial calculations
+│   └── storage/           # Data persistence
+├── models/                # TypeScript types
+├── utils/                 # Utility functions
+├── constants/            # Constants (colors, spacing, typography)
+└── docs/                  # Documentation
+    ├── ARCHITECTURE.md    # Detailed architecture
+    └── next-steps/        # Future roadmap
 ```
 
-Para mais detalhes sobre a arquitetura, consulte [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+For more details on the architecture, see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 
-O projeto segue uma arquitetura em camadas com separação clara de responsabilidades:
+The project follows a layered architecture with clear separation of responsibilities:
 
 ```
 UI Layer (app/, components/)
@@ -125,118 +125,121 @@ Services Layer (services/)
 Storage Layer (services/storage/)
 ```
 
-### Princípios
+### Principles
 
-1. **Offline-first**: App funciona 100% offline
-2. **Separação de Responsabilidades**: UI, lógica de negócio e persistência separadas
-3. **Dependências Unidirecionais**: UI → Hooks/Contexts → Services → Storage
-4. **Tipagem Forte**: TypeScript em todo o código
+1. **Offline-first**: App works 100% offline
+2. **Separation of Concerns**: UI, business logic, and persistence separated
+3. **Unidirectional Dependencies**: UI → Hooks/Contexts → Services → Storage
+4. **Strong Typing**: TypeScript throughout the codebase
 
-### Regras de Ouro
+### Golden Rules
 
-- ❌ Nunca importar services diretamente em componentes UI
-- ❌ Contexts não contêm lógica de cálculo
-- ✅ Services são puros e testáveis
-- ✅ UI não conhece storage diretamente
+- ❌ Never import services directly in UI components
+- ❌ Contexts do not contain calculation logic
+- ✅ Services are pure and testable
+- ✅ UI does not know storage directly
 
-## 🚦 Como Começar
+## 🚦 Getting Started
 
-### Pré-requisitos
+### Prerequisites
 
-- Node.js (versão 18 ou superior)
-- npm ou yarn
-- Expo CLI (instalado globalmente ou via npx)
-- Dispositivo móvel com Expo Go ou emulador/simulador
+- Node.js (version 18 or higher)
+- npm or yarn
+- Expo CLI (installed globally or via npx)
+- Mobile device with Expo Go or emulator/simulator
 
-### Instalação
+### Installation
 
-1. **Clone o repositório**
+1. **Clone the repository**
    ```bash
    git clone <repository-url>
    cd my-finances
    ```
 
-2. **Instale as dependências**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Inicie o servidor de desenvolvimento**
+3. **Start the development server**
    ```bash
    npx expo start
    ```
 
-4. **Execute no dispositivo**
-   - **Expo Go**: Escaneie o QR code com o app Expo Go
-   - **iOS Simulator**: Pressione `i` no terminal
-   - **Android Emulator**: Pressione `a` no terminal
-   - **Web**: Pressione `w` no terminal
+4. **Run on device**
+   - **Expo Go**: Scan the QR code with the Expo Go app
+   - **iOS Simulator**: Press `i` in the terminal
+   - **Android Emulator**: Press `a` in the terminal
+   - **Web**: Press `w` in the terminal
 
-### Scripts Disponíveis
+### Available Scripts
 
 ```bash
-npm start          # Inicia o servidor Expo
-npm run android    # Inicia no Android
-npm run ios        # Inicia no iOS
-npm run web        # Inicia no navegador
-npm run lint       # Executa o linter
+npm start          # Start Expo server
+npm run android    # Run on Android
+npm run ios        # Run on iOS
+npm run web        # Run in browser
+npm run lint       # Run linter
 ```
 
-## 📚 Documentação
+## 📚 Documentation
 
-- **[Arquitetura](docs/ARCHITECTURE.md)**: Detalhes sobre a estrutura e organização do código
-- **[Roadmap](docs/README-ROADMAP-GERAL.md)**: Plano de evolução do projeto
-- **[Services](services/README.md)**: Documentação dos serviços
+- **[Architecture](docs/ARCHITECTURE.md)**: Details about code structure and organization
+- **[Roadmap](docs/README-ROADMAP-GERAL.md)**: Project evolution plan
+- **[Services](services/README.md)**: Services documentation
 
 ## 🗺️ Roadmap
 
-O projeto está organizado em fases de desenvolvimento:
+The project is organized into development phases:
 
-- ✅ **Fase 0**: Base Consolidada (Concluída)
-- ✅ **Fase 1**: Arquitetura e Organização (Concluída)
-- 🔄 **Fase 2**: Persistência Local Avançada (Planejada)
-- 🔄 **Fase 3**: Internacionalização PT/EN (Planejada)
-- 🔄 **Fase 4**: Preparação para Publicação (Planejada)
-- 🔄 **Fase 5**: Cloud Sync & Login (Planejada)
-- 🔄 **Fase 6**: Free vs Pro (Planejada)
-- 🔄 **Fase 7**: Pagamentos IAP (Planejada)
-- 🔄 **Fase 8**: Anúncios AdMob (Planejada)
+- ✅ **Phase 0**: Consolidated Base (Completed)
+- ✅ **Phase 1**: Architecture and Organization (Completed)
+- ✅ **Phase 2**: Advanced Local Persistence (Planned)
+- ✅ **Phase 3**: Internationalization PT/EN (Planned)
+- 🔄 **Phase 4**: Publication Preparation (Planned)
+- 🔄 **Phase 5**: Cloud Sync & Login (Planned)
+- 🔄 **Phase 6**: Free vs Pro (Planned)
+- 🔄 **Phase 7**: IAP Payments (Planned)
+- 🔄 **Phase 8**: AdMob Ads (Planned)
 
-Para mais detalhes, consulte [docs/README-ROADMAP-GERAL.md](docs/README-ROADMAP-GERAL.md).
+For more details, see [docs/README-ROADMAP-GERAL.md](docs/README-ROADMAP-GERAL.md).
 
 ## 🎨 Design System
 
-O projeto utiliza um sistema de design consistente:
+The project uses a consistent design system:
 
-- **Cores**: Tema dark/light com paleta definida em `constants/theme.ts`
-- **Espaçamento**: Sistema de espaçamento padronizado em `constants/spacing.ts`
-- **Tipografia**: Hierarquia tipográfica em `constants/typography.ts`
-- **Componentes**: Biblioteca de componentes reutilizáveis em `components/ui/`
+- **Colors**: Dark/light theme with palette defined in `constants/theme.ts`
+- **Spacing**: Standardized spacing system in `constants/spacing.ts`
+- **Typography**: Typographic hierarchy in `constants/typography.ts`
+- **Components**: Library of reusable components in `components/ui/`
 
-## 🔒 Privacidade e Dados
+## 🔒 Privacy and Data
 
-- **Armazenamento Local**: Todos os dados são armazenados localmente no dispositivo
-- **Sem Coleta de Dados**: Nenhum dado é enviado para servidores externos
-- **Offline-first**: Funciona completamente sem conexão à internet
+- **Local Storage**: All data is stored locally on the device
+- **No Data Collection**: No data is sent to external servers
+- **Offline-first**: Works completely without internet connection
 
-## 🤝 Contribuindo
+## 🤝 Contributing
 
-Este é um projeto pessoal, mas sugestões e melhorias são bem-vindas!
+This is a personal project, but suggestions and improvements are welcome!
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+1. Fork the project
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📝 Licença
+## 📝 License
 
-Este projeto é privado e de uso pessoal.
+This project is private and for personal use.
 
-## 👤 Autor
+## 👤 Author
 
-Desenvolvido como projeto pessoal de planejamento financeiro.
+**Jhonatan da Costa**
+
+- GitHub: [@JhonatanSK](https://github.com/JhonatanSK)
+- LinkedIn: [jhonatan-da-costa](https://www.linkedin.com/in/jhonatan-da-costa/)
 
 ---
 
-**Nota**: Este projeto está em desenvolvimento ativo. Funcionalidades podem mudar e novas features podem ser adicionadas.
+**Note**: This project is under active development. Features may change and new features may be added.
