@@ -48,7 +48,11 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
     try {
       setIsLoading(true);
       const loadedReports = await localStorageService.getReports();
-      setReports(loadedReports);
+      // Garantir que não há duplicatas por ID
+      const uniqueReports = loadedReports.filter((report, index, self) =>
+        index === self.findIndex((r) => r.id === report.id)
+      );
+      setReports(uniqueReports);
     } catch (error) {
       console.error('Error loading reports:', error);
     } finally {
@@ -78,7 +82,14 @@ export function ReportsProvider({ children }: ReportsProviderProps) {
       };
 
       await localStorageService.saveReport(newReport);
-      setReports((prev) => [...prev, newReport]);
+      // Garantir que não adiciona duplicata se já existir
+      setReports((prev) => {
+        const exists = prev.some((r) => r.id === newReport.id);
+        if (exists) {
+          return prev;
+        }
+        return [...prev, newReport];
+      });
       return newReport;
     },
     []

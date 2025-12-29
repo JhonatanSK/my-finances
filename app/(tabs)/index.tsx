@@ -9,7 +9,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useReports } from '@/hooks/useReports';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   Alert,
   FlatList,
@@ -27,10 +27,6 @@ export default function ReportsListScreen() {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
 
-  useEffect(() => {
-    loadReports();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleCreateReport = () => {
     router.push('/report/form');
