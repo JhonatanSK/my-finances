@@ -20,7 +20,7 @@ export const CURRENT_SCHEMA_VERSION = 1;
 /**
  * Chave única para armazenar o estado completo
  */
-export const PERSISTED_STATE_KEY = '@my-finances/state';
+export const PERSISTED_STATE_KEY = '@clarus/state';
 
 /**
  * Resultado de uma operação de importação

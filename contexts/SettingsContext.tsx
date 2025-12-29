@@ -3,7 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useColorScheme as useSystemColorScheme } from 'react-native';
 
-const SETTINGS_KEY = '@my-finances/settings';
+const SETTINGS_KEY = '@clarus/settings';
+const OLD_SETTINGS_KEY = '@my-finances/settings';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -51,7 +52,20 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
 
   const loadSettings = async () => {
     try {
-      const stored = await AsyncStorage.getItem(SETTINGS_KEY);
+      let stored = await AsyncStorage.getItem(SETTINGS_KEY);
+      
+      // Migrar dados antigos se necessário
+      if (!stored) {
+        const oldStored = await AsyncStorage.getItem(OLD_SETTINGS_KEY);
+        if (oldStored) {
+          // Migrar dados antigos para nova chave
+          await AsyncStorage.setItem(SETTINGS_KEY, oldStored);
+          await AsyncStorage.removeItem(OLD_SETTINGS_KEY);
+          stored = oldStored;
+          console.log('Migrated settings from old key');
+        }
+      }
+      
       if (stored) {
         const parsed = JSON.parse(stored);
         // Ensure entitlements are always present with defaults

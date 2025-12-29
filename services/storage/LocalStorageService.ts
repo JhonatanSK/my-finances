@@ -22,8 +22,20 @@ class LocalStorageServiceImpl implements StorageService {
     }
 
     try {
-      // Tentar carregar estado versionado
-      const stateData = await AsyncStorage.getItem(PERSISTED_STATE_KEY);
+      // Tentar carregar estado versionado (nova chave)
+      let stateData = await AsyncStorage.getItem(PERSISTED_STATE_KEY);
+      
+      // Migrar do estado antigo se necessário
+      if (!stateData) {
+        const oldStateData = await AsyncStorage.getItem('@my-finances/state');
+        if (oldStateData) {
+          // Migrar para nova chave
+          await AsyncStorage.setItem(PERSISTED_STATE_KEY, oldStateData);
+          await AsyncStorage.removeItem('@my-finances/state');
+          stateData = oldStateData;
+          console.log('Migrated persisted state from old key');
+        }
+      }
       
       let rawData: any = null;
       if (stateData) {
