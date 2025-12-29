@@ -6,6 +6,10 @@
 [![React Native](https://img.shields.io/badge/React%20Native-0.81.5-61DAFB?style=flat&logo=react)](https://reactnative.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat&logo=typescript)](https://www.typescriptlang.org)
 
+<p align="center">
+  <img src="assets/gifs/clarus.gif" alt="Clarus App Demo" />
+</p>
+
 ## 📱 About the Project
 
 **Clarus** is a mobile application developed with React Native and Expo that allows you to create personal financial reports, project asset growth over time, and analyze different investment scenarios.
